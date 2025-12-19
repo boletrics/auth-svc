@@ -1,12 +1,12 @@
 import type { BetterAuthOptions } from "better-auth";
 import { jwt } from "better-auth/plugins/jwt";
 
-import type { Bindings, JanovixEnvironment } from "../types/bindings";
+import type { Bindings, BoletricsEnvironment } from "../types/bindings";
 
 const BASE_PATH = "/api/auth";
-const ORG_SLUG = "janovix";
+const ORG_SLUG = "boletrics";
 
-const ENVIRONMENT_MAP: Record<string, JanovixEnvironment> = {
+const ENVIRONMENT_MAP: Record<string, BoletricsEnvironment> = {
 	dev: "dev",
 	development: "dev",
 	qa: "qa",
@@ -19,7 +19,7 @@ const ENVIRONMENT_MAP: Record<string, JanovixEnvironment> = {
 };
 
 const RATE_LIMITS: Record<
-	JanovixEnvironment,
+	BoletricsEnvironment,
 	{ window: number; max: number; enabled: boolean }
 > = {
 	local: { window: 10, max: 300, enabled: false },
@@ -30,19 +30,20 @@ const RATE_LIMITS: Record<
 	test: { window: 10, max: 60, enabled: false },
 };
 
-const COOKIE_DOMAIN_BY_ENV: Partial<Record<JanovixEnvironment, string>> = {
-	preview: ".janovix.workers.dev",
-	dev: ".janovix.workers.dev",
+const COOKIE_DOMAIN_BY_ENV: Partial<Record<BoletricsEnvironment, string>> = {
+	preview: ".boletrics.workers.dev",
+	dev: ".boletrics.workers.dev",
 	qa: ".algenium.qa",
-	production: ".janovix.ai",
+	production: ".boletrics.com",
 };
 
-const TRUSTED_ORIGINS_BY_ENV: Partial<Record<JanovixEnvironment, string[]>> = {
-	preview: ["https://*.janovix.workers.dev"],
-	dev: ["https://*.janovix.workers.dev"],
-	qa: ["https://*.algenium.qa"],
-	production: ["https://*.janovix.ai"],
-};
+const TRUSTED_ORIGINS_BY_ENV: Partial<Record<BoletricsEnvironment, string[]>> =
+	{
+		preview: ["https://*.boletrics.workers.dev"],
+		dev: ["https://*.boletrics.workers.dev"],
+		qa: ["https://*.algenium.qa"],
+		production: ["https://*.boletrics.com"],
+	};
 
 const LOCAL_DEVELOPMENT_ORIGINS = [
 	"http://localhost:*",
@@ -51,7 +52,7 @@ const LOCAL_DEVELOPMENT_ORIGINS = [
 	"https://127.0.0.1:*",
 ];
 
-const CROSS_SUBDOMAIN_ENVS: ReadonlySet<JanovixEnvironment> = new Set([
+const CROSS_SUBDOMAIN_ENVS: ReadonlySet<BoletricsEnvironment> = new Set([
 	"preview",
 	"dev",
 	"qa",
@@ -70,7 +71,7 @@ export type ResolvedAuthConfig = {
 	accessPolicy: AuthAccessPolicy;
 };
 
-export function resolveAuthEnvironment(env: Bindings): JanovixEnvironment {
+export function resolveAuthEnvironment(env: Bindings): BoletricsEnvironment {
 	const fallback = env.ENVIRONMENT?.toLowerCase?.() ?? "local";
 	return ENVIRONMENT_MAP[fallback] ?? "local";
 }
@@ -127,7 +128,7 @@ export function buildResolvedAuthConfig(env: Bindings): ResolvedAuthConfig {
 }
 
 function buildAdvancedOptions(
-	env: JanovixEnvironment,
+	env: BoletricsEnvironment,
 	cookieDomain: string | undefined,
 ): BetterAuthOptions["advanced"] {
 	const advanced: BetterAuthOptions["advanced"] = {
@@ -152,7 +153,7 @@ function buildAdvancedOptions(
 	return advanced;
 }
 
-function resolveSecret(secret: string | undefined, env: JanovixEnvironment) {
+function resolveSecret(secret: string | undefined, env: BoletricsEnvironment) {
 	if (secret && secret.length >= 32) {
 		return secret;
 	}
@@ -168,7 +169,7 @@ function resolveSecret(secret: string | undefined, env: JanovixEnvironment) {
 
 function resolveBaseURL(
 	baseURL: string | undefined,
-	env: JanovixEnvironment,
+	env: BoletricsEnvironment,
 ): string | undefined {
 	// baseURL is optional for local/test environments where Better Auth can infer it
 	if (env === "local" || env === "test") {
@@ -202,7 +203,7 @@ function resolveBaseURL(
 
 function resolveAccessPolicy(
 	env: Bindings,
-	resolvedEnv: JanovixEnvironment,
+	resolvedEnv: BoletricsEnvironment,
 ): AuthAccessPolicy {
 	const enforceInternal = resolvedEnv !== "local" && resolvedEnv !== "test";
 	const token = env.AUTH_INTERNAL_TOKEN;
@@ -223,7 +224,7 @@ function resolveAccessPolicy(
 			};
 }
 
-function resolveCookieDomain(env: Bindings, resolvedEnv: JanovixEnvironment) {
+function resolveCookieDomain(env: Bindings, resolvedEnv: BoletricsEnvironment) {
 	const override = normalizeCookieDomain(env.AUTH_COOKIE_DOMAIN);
 	if (override) {
 		return override;
@@ -258,7 +259,7 @@ function normalizeCookieDomain(domain: string | undefined) {
 }
 
 function shouldEnableCrossSubdomainCookies(
-	env: JanovixEnvironment,
+	env: BoletricsEnvironment,
 	cookieDomain?: string,
 ): cookieDomain is string {
 	return CROSS_SUBDOMAIN_ENVS.has(env) && !!cookieDomain;
@@ -266,7 +267,7 @@ function shouldEnableCrossSubdomainCookies(
 
 function resolveTrustedOrigins(
 	env: Bindings,
-	resolvedEnv: JanovixEnvironment,
+	resolvedEnv: BoletricsEnvironment,
 	cookieDomain?: string,
 ) {
 	const origins = new Set<string>();

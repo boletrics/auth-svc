@@ -12,18 +12,18 @@
 		{
 			"binding": "DB",
 			"database_name": "auth-preview",
-			"database_id": "0b60b3d0-6777-46bf-9896-6284defd0a6d",
+			"database_id": "fcc3ac41-ca0d-441e-b66f-c18684aeecff",
 		},
 	],
 	"kv_namespaces": [
 		{
 			"binding": "KV",
-			"id": "3c23d46024664e99b7a480bd052c9297",
+			"id": "4348532f5a8e48f89d8f17e5c88474b6",
 		},
 	],
 	"vars": {
 		"ENVIRONMENT": "preview",
-		"BETTER_AUTH_URL": "https://auth-svc.janovix.workers.dev",
-		"AUTH_TRUSTED_ORIGINS": "https://*.janovix.workers.dev",
+		"BETTER_AUTH_URL": "https://auth-svc.boletrics.workers.dev",
+		"AUTH_TRUSTED_ORIGINS": "https://*.boletrics.workers.dev",
 	},
 }

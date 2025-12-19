@@ -1,4 +1,4 @@
-export type JanovixEnvironment =
+export type BoletricsEnvironment =
 	| "local"
 	| "preview"
 	| "dev"
@@ -10,7 +10,7 @@ export type Bindings = Env & {
 	/**
 	 * Environment identifier (local, dev, qa, production, preview, test)
 	 */
-	ENVIRONMENT?: JanovixEnvironment | string;
+	ENVIRONMENT?: BoletricsEnvironment | string;
 	/**
 	 * Secret used by Better Auth to sign tokens and encrypt sensitive data.
 	 * Must be configured per environment via Wrangler secrets.

@@ -1,0 +1,29 @@
+{
+	"compatibility_date": "2025-10-08",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "src/index.ts",
+	"name": "auth-svc",
+	"upload_source_maps": true,
+	"workers_dev": true,
+	"observability": {
+		"enabled": true,
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "auth-dev",
+			"database_id": "b0723830-6132-4862-b54c-703ac25d19ac",
+		},
+	],
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "ed47d888b7b941c48e25ceebac50edb2",
+		},
+	],
+	"vars": {
+		"ENVIRONMENT": "dev",
+		"BETTER_AUTH_URL": "https://auth-svc.janovix.workers.dev",
+		"AUTH_TRUSTED_ORIGINS": "https://*.janovix.workers.dev",
+	},
+}

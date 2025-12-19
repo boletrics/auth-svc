@@ -1,0 +1,28 @@
+{
+	"compatibility_date": "2025-10-08",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "src/index.ts",
+	"name": "backend-template-prod",
+	"upload_source_maps": true,
+	"observability": {
+		"enabled": true,
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "auth",
+			"database_id": "da16c7b1-49d9-4644-a956-b671b1c2f09a",
+		},
+	],
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "bdce8bcdb45b485fb0518fec19ab664b",
+		},
+	],
+	"vars": {
+		"ENVIRONMENT": "production",
+		"BETTER_AUTH_URL": "https://auth-svc.janovix.ai",
+		"AUTH_TRUSTED_ORIGINS": "https://*.janovix.ai",
+	},
+}

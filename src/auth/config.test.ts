@@ -75,7 +75,7 @@ describe("buildResolvedAuthConfig", () => {
 		const config = buildResolvedAuthConfig(
 			buildEnv({
 				ENVIRONMENT: "production",
-				BETTER_AUTH_URL: "https://auth-core.boletrics.ai",
+				BETTER_AUTH_URL: "https://auth-core.boletrics.com",
 				AUTH_COOKIE_DOMAIN: "login.client.com",
 				AUTH_TRUSTED_ORIGINS:
 					"https://portal.client.com,https://*.client-staging.com",
@@ -98,7 +98,7 @@ describe("buildResolvedAuthConfig", () => {
 		);
 		// ENVIRONMENT-based default should NOT be included when AUTH_TRUSTED_ORIGINS is set
 		expect(config.options.trustedOrigins).not.toContain(
-			"https://*.boletrics.ai",
+			"https://*.boletrics.com",
 		);
 	});
 

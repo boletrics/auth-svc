@@ -34,7 +34,7 @@ const COOKIE_DOMAIN_BY_ENV: Partial<Record<BoletricsEnvironment, string>> = {
 	preview: ".boletrics.workers.dev",
 	dev: ".boletrics.workers.dev",
 	qa: ".algenium.qa",
-	production: ".boletrics.ai",
+	production: ".boletrics.com",
 };
 
 const TRUSTED_ORIGINS_BY_ENV: Partial<Record<BoletricsEnvironment, string[]>> =
@@ -42,7 +42,7 @@ const TRUSTED_ORIGINS_BY_ENV: Partial<Record<BoletricsEnvironment, string[]>> =
 		preview: ["https://*.boletrics.workers.dev"],
 		dev: ["https://*.boletrics.workers.dev"],
 		qa: ["https://*.algenium.qa"],
-		production: ["https://*.boletrics.ai"],
+		production: ["https://*.boletrics.com"],
 	};
 
 const LOCAL_DEVELOPMENT_ORIGINS = [

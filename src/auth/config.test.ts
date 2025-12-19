@@ -27,20 +27,20 @@ function buildEnvWithoutInternalToken(overrides: Partial<Bindings> = {}) {
 }
 
 describe("buildResolvedAuthConfig", () => {
-	it("enables cross-subdomain cookies for dev and allows *.janovix.workers.dev origins", () => {
+	it("enables cross-subdomain cookies for dev and allows *.boletrics.workers.dev origins", () => {
 		const config = buildResolvedAuthConfig(
 			buildEnv({
 				ENVIRONMENT: "dev",
-				BETTER_AUTH_URL: "https://auth-core.janovix.workers.dev",
+				BETTER_AUTH_URL: "https://auth-core.boletrics.workers.dev",
 			}),
 		);
 
 		expect(config.options.advanced?.crossSubDomainCookies).toEqual({
 			enabled: true,
-			domain: ".janovix.workers.dev",
+			domain: ".boletrics.workers.dev",
 		});
 		expect(config.options.trustedOrigins).toContain(
-			"https://*.janovix.workers.dev",
+			"https://*.boletrics.workers.dev",
 		);
 		expect(config.options.advanced?.useSecureCookies).toBe(true);
 		// JWT/JWKS plugin is enabled by default
@@ -67,7 +67,7 @@ describe("buildResolvedAuthConfig", () => {
 		});
 		expect(config.options.trustedOrigins).toContain("https://*.algenium.qa");
 		expect(config.options.trustedOrigins).not.toContain(
-			"https://*.janovix.workers.dev",
+			"https://*.boletrics.workers.dev",
 		);
 	});
 
@@ -75,7 +75,7 @@ describe("buildResolvedAuthConfig", () => {
 		const config = buildResolvedAuthConfig(
 			buildEnv({
 				ENVIRONMENT: "production",
-				BETTER_AUTH_URL: "https://auth-core.janovix.ai",
+				BETTER_AUTH_URL: "https://auth-core.boletrics.ai",
 				AUTH_COOKIE_DOMAIN: "login.client.com",
 				AUTH_TRUSTED_ORIGINS:
 					"https://portal.client.com,https://*.client-staging.com",
@@ -97,7 +97,9 @@ describe("buildResolvedAuthConfig", () => {
 			]),
 		);
 		// ENVIRONMENT-based default should NOT be included when AUTH_TRUSTED_ORIGINS is set
-		expect(config.options.trustedOrigins).not.toContain("https://*.janovix.ai");
+		expect(config.options.trustedOrigins).not.toContain(
+			"https://*.boletrics.ai",
+		);
 	});
 
 	it("keeps localhost origins for local env without cross-subdomain cookies", () => {
@@ -115,13 +117,13 @@ describe("buildResolvedAuthConfig", () => {
 		const config = buildResolvedAuthConfig(
 			buildEnv({
 				ENVIRONMENT: "dev",
-				BETTER_AUTH_URL: "https://auth-core.janovix.workers.dev",
+				BETTER_AUTH_URL: "https://auth-core.boletrics.workers.dev",
 			}),
 		);
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		expect((config.options as any).baseURL).toBe(
-			"https://auth-core.janovix.workers.dev",
+			"https://auth-core.boletrics.workers.dev",
 		);
 	});
 

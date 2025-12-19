@@ -2,11 +2,11 @@
 
 ## Problem
 
-When making requests from `https://auth.janovix.workers.dev` to `https://auth-svc.janovix.workers.dev/api/auth/sign-in/email`, the browser was blocking the request with:
+When making requests from `https://auth.boletrics.workers.dev` to `https://auth-svc.boletrics.workers.dev/api/auth/sign-in/email`, the browser was blocking the request with:
 
 ```
-Access to fetch at 'https://auth-svc.janovix.workers.dev/api/auth/sign-in/email'
-from origin 'https://auth.janovix.workers.dev' has been blocked by CORS policy:
+Access to fetch at 'https://auth-svc.boletrics.workers.dev/api/auth/sign-in/email'
+from origin 'https://auth.boletrics.workers.dev' has been blocked by CORS policy:
 Response to preflight request doesn't pass access control check:
 No 'Access-Control-Allow-Origin' header is present on the requested resource.
 ```
@@ -83,11 +83,11 @@ This function:
 
 ## Origin Pattern Matching
 
-The origin `https://auth.janovix.workers.dev` correctly matches the pattern `https://*.janovix.workers.dev` because:
+The origin `https://auth.boletrics.workers.dev` correctly matches the pattern `https://*.boletrics.workers.dev` because:
 
-1. The pattern `*.janovix.workers.dev` starts with `*.`
-2. The host `auth.janovix.workers.dev` ends with `.janovix.workers.dev`
-3. The host is not equal to the base domain (`auth.janovix.workers.dev` !== `janovix.workers.dev`)
+1. The pattern `*.boletrics.workers.dev` starts with `*.`
+2. The host `auth.boletrics.workers.dev` ends with `.boletrics.workers.dev`
+3. The host is not equal to the base domain (`auth.boletrics.workers.dev` !== `boletrics.workers.dev`)
 
 This matching logic is implemented in `src/http/origins.ts` and correctly handles wildcard subdomain patterns.
 

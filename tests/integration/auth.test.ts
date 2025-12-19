@@ -25,7 +25,7 @@ describe("Better Auth route access control", () => {
 				...env,
 				ENVIRONMENT: "dev",
 				BETTER_AUTH_SECRET: TEST_SECRET,
-				BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+				BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 				AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 			},
 			{} as ExecutionContext,
@@ -42,7 +42,7 @@ describe("Better Auth route access control", () => {
 				...env,
 				ENVIRONMENT: "dev",
 				BETTER_AUTH_SECRET: TEST_SECRET,
-				BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+				BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 				AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 			},
 			{} as ExecutionContext,
@@ -66,7 +66,7 @@ describe("Better Auth route access control", () => {
 				...env,
 				ENVIRONMENT: "dev",
 				BETTER_AUTH_SECRET: TEST_SECRET,
-				BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+				BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 				AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 			},
 			{} as ExecutionContext,
@@ -95,7 +95,7 @@ describe("Better Auth route access control", () => {
 	it("allows trusted browser origins in non-local envs", async () => {
 		const request = new Request("http://localhost/api/auth/health", {
 			headers: {
-				origin: "https://app.janovix.workers.dev",
+				origin: "https://app.boletrics.workers.dev",
 			},
 		});
 
@@ -105,7 +105,7 @@ describe("Better Auth route access control", () => {
 				...env,
 				ENVIRONMENT: "dev",
 				BETTER_AUTH_SECRET: TEST_SECRET,
-				BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+				BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 				AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 			},
 			{} as ExecutionContext,
@@ -128,7 +128,7 @@ describe("Better Auth route access control", () => {
 				...env,
 				ENVIRONMENT: "dev",
 				BETTER_AUTH_SECRET: TEST_SECRET,
-				BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+				BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 				AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 			},
 			{} as ExecutionContext,
@@ -142,7 +142,7 @@ describe("Better Auth route access control", () => {
 			const request = new Request("http://localhost/api/auth/sign-in/email", {
 				method: "OPTIONS",
 				headers: {
-					origin: "https://app.janovix.workers.dev",
+					origin: "https://app.boletrics.workers.dev",
 				},
 			});
 
@@ -152,7 +152,7 @@ describe("Better Auth route access control", () => {
 					...env,
 					ENVIRONMENT: "dev",
 					BETTER_AUTH_SECRET: TEST_SECRET,
-					BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 				},
 				{} as ExecutionContext,
@@ -174,7 +174,7 @@ describe("Better Auth route access control", () => {
 					...env,
 					ENVIRONMENT: "dev",
 					BETTER_AUTH_SECRET: TEST_SECRET,
-					BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 				},
 				{} as ExecutionContext,
@@ -198,7 +198,7 @@ describe("Better Auth route access control", () => {
 					...env,
 					ENVIRONMENT: "dev",
 					BETTER_AUTH_SECRET: TEST_SECRET,
-					BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 				},
 				{} as ExecutionContext,
@@ -216,7 +216,7 @@ describe("Better Auth route access control", () => {
 			const request = new Request("http://localhost/api/auth/session", {
 				method: "GET",
 				headers: {
-					origin: "https://app.janovix.workers.dev",
+					origin: "https://app.boletrics.workers.dev",
 				},
 			});
 
@@ -226,7 +226,7 @@ describe("Better Auth route access control", () => {
 					...env,
 					ENVIRONMENT: "dev",
 					BETTER_AUTH_SECRET: TEST_SECRET,
-					BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 				},
 				{} as ExecutionContext,
@@ -254,7 +254,7 @@ describe("Better Auth route access control", () => {
 					...env,
 					ENVIRONMENT: "dev",
 					BETTER_AUTH_SECRET: TEST_SECRET,
-					BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 				},
 				{} as ExecutionContext,
@@ -280,7 +280,7 @@ describe("Better Auth route access control", () => {
 					...env,
 					ENVIRONMENT: "dev",
 					BETTER_AUTH_SECRET: TEST_SECRET,
-					BETTER_AUTH_URL: "https://auth-svc.janovix.workers.dev",
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
 					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
 				},
 				{} as ExecutionContext,

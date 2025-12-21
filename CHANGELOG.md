@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/boletrics/auth-svc/compare/v1.2.0...v1.2.1) (2025-12-21)
+
+
+### Bug Fixes
+
+* logo header in email templates ([8b3d252](https://github.com/boletrics/auth-svc/commit/8b3d2527b390959daf4c95b3bec28303de30245d))
+
 # [1.2.0](https://github.com/boletrics/auth-svc/compare/v1.1.0...v1.2.0) (2025-12-21)
 
 

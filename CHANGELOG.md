@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/boletrics/auth-svc/compare/v1.1.0...v1.2.0) (2025-12-21)
+
+
+### Features
+
+* add Turnstile validation, KV storage, and public routes for email/reset ([82ef11c](https://github.com/boletrics/auth-svc/commit/82ef11c4381e0f481d4eb18a55d3deac6aa7c857))
+
 # [1.1.0](https://github.com/boletrics/auth-svc/compare/v1.0.0...v1.1.0) (2025-12-21)
 
 

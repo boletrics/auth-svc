@@ -22,7 +22,8 @@
 	],
 	"vars": {
 		"ENVIRONMENT": "production",
-		"BETTER_AUTH_URL": "https://auth-svc.boletrics.com",
-		"AUTH_TRUSTED_ORIGINS": "https://*.boletrics.com",
+		"BETTER_AUTH_URL": "https://auth-svc.boletrics.workers.dev",
+		"AUTH_TRUSTED_ORIGINS": "https://*.boletrics.workers.dev",
+		"AUTH_FRONTEND_URL": "https://auth.boletrics.workers.dev",
 	},
 }

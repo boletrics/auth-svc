@@ -53,20 +53,19 @@ describe("buildResolvedAuthConfig", () => {
 		).toBe(true);
 	});
 
-	it("isolates QA cookies and trusted origins under *.algenium.qa", () => {
+	it("uses boletrics.workers.dev for QA environment (no separate QA domain)", () => {
 		const config = buildResolvedAuthConfig(
 			buildEnv({
 				ENVIRONMENT: "qa",
-				BETTER_AUTH_URL: "https://auth-core.algenium.qa",
+				BETTER_AUTH_URL: "https://auth-core.boletrics.workers.dev",
 			}),
 		);
 
 		expect(config.options.advanced?.crossSubDomainCookies).toEqual({
 			enabled: true,
-			domain: ".algenium.qa",
+			domain: ".boletrics.workers.dev",
 		});
-		expect(config.options.trustedOrigins).toContain("https://*.algenium.qa");
-		expect(config.options.trustedOrigins).not.toContain(
+		expect(config.options.trustedOrigins).toContain(
 			"https://*.boletrics.workers.dev",
 		);
 	});

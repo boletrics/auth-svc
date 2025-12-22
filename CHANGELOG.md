@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/boletrics/auth-svc/compare/v1.4.1...v1.5.0) (2025-12-22)
+
+
+### Features
+
+* **auth:** add admin plugin for user management ([80c7021](https://github.com/boletrics/auth-svc/commit/80c7021a6144144954d854a10a14836bffba0344))
+
 ## [1.4.1](https://github.com/boletrics/auth-svc/compare/v1.4.0...v1.4.1) (2025-12-22)
 
 

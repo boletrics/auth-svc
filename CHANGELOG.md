@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/boletrics/auth-svc/compare/v1.3.2...v1.4.0) (2025-12-22)
+
+
+### Features
+
+* **org:** add list-invitations and cancel-invitation endpoints ([3264aa0](https://github.com/boletrics/auth-svc/commit/3264aa0171f673e979b5a7b88f0b8bd06e5318e3))
+
 ## [1.3.2](https://github.com/boletrics/auth-svc/compare/v1.3.1...v1.3.2) (2025-12-22)
 
 

@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/boletrics/auth-svc/compare/v1.4.0...v1.4.1) (2025-12-22)
+
+
+### Bug Fixes
+
+* **org:** use partner app URL for invitation emails ([e41fe3e](https://github.com/boletrics/auth-svc/commit/e41fe3eec8ecb91dac5e2cfdbeae176bccebf16f))
+
 # [1.4.0](https://github.com/boletrics/auth-svc/compare/v1.3.2...v1.4.0) (2025-12-22)
 
 

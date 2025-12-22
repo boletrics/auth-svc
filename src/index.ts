@@ -21,6 +21,8 @@ import {
 	AuthOrganizationInviteMemberEndpoint,
 	AuthOrganizationAcceptInvitationEndpoint,
 	AuthOrganizationListMembersEndpoint,
+	AuthOrganizationListInvitationsEndpoint,
+	AuthOrganizationCancelInvitationEndpoint,
 } from "./endpoints/auth/openapi";
 
 // Start a Hono app
@@ -120,6 +122,14 @@ openapi.post(
 openapi.get(
 	"/api/auth/organization/list-members",
 	AuthOrganizationListMembersEndpoint,
+);
+openapi.get(
+	"/api/auth/organization/list-invitations",
+	AuthOrganizationListInvitationsEndpoint,
+);
+openapi.post(
+	"/api/auth/organization/cancel-invitation",
+	AuthOrganizationCancelInvitationEndpoint,
 );
 
 // Register other endpoints

@@ -421,3 +421,63 @@ export class AuthOrganizationListMembersEndpoint extends OpenAPIRoute {
 		throw new Error("This endpoint is handled by Better Auth");
 	}
 }
+
+export class AuthOrganizationListInvitationsEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "List pending invitations for an organization",
+		operationId: "auth-organization-list-invitations",
+		request: {
+			query: z.object({
+				organizationId: z.string().optional(),
+				organizationSlug: z.string().optional(),
+				status: z
+					.enum(["pending", "accepted", "rejected", "canceled"])
+					.optional(),
+			}),
+		},
+		responses: {
+			"200": {
+				description: "Invitations list",
+				...contentJson(SuccessResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}
+
+export class AuthOrganizationCancelInvitationEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "Cancel a pending invitation",
+		operationId: "auth-organization-cancel-invitation",
+		request: {
+			body: contentJson(
+				z.object({
+					invitationId: z.string(),
+				}),
+			),
+		},
+		responses: {
+			"200": {
+				description: "Invitation canceled",
+				...contentJson(SuccessResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}

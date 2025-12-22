@@ -20,6 +20,11 @@ model User {
   image         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  // Better Auth admin plugin fields
+  role          String   @default("user")
+  banned        Boolean  @default(false)
+  banReason     String?
+  banExpires    DateTime?
 
   sessions Session[]
   accounts Account[]
@@ -39,6 +44,8 @@ model Session {
   userAgent String?
   // Better Auth Organization plugin: current "active" org for the session.
   activeOrganizationId String?
+  // Better Auth admin plugin: ID of admin user impersonating this session.
+  impersonatedBy String?
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

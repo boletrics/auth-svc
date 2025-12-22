@@ -1,4 +1,5 @@
 import type { BetterAuthOptions } from "better-auth";
+import { admin } from "better-auth/plugins/admin";
 import { jwt } from "better-auth/plugins/jwt";
 import { organization } from "better-auth/plugins/organization";
 
@@ -204,6 +205,12 @@ export function buildResolvedAuthConfig(
 				jwt: {
 					expirationTime: resolvedEnv === "production" ? "15m" : "30m",
 				},
+			}),
+			admin({
+				// Admin users can manage all users, roles, and perform admin operations
+				// Users with "admin" role or in adminUserIds list get admin privileges
+				defaultRole: "user",
+				adminRoles: ["admin"],
 			}),
 			organization({
 				// Organization membership support (users <-> organizations).

@@ -197,7 +197,7 @@ export async function sendVerificationEmail(
 export async function sendOrganizationInvitationEmail(
 	apiKey: string,
 	invitation: OrganizationInvitationEmail,
-	templateName = "boletrics-auth-organization-invitation-template",
+	templateName = "boletrics-org-invitation-template",
 ): Promise<void> {
 	try {
 		await sendMandrillTemplate(apiKey, {

@@ -1,13 +1,13 @@
 -- Migration number: 0004 	 2025-12-22T00:00:00.000Z
 -- Better Auth organization plugin storage.
--- Uses singular table names to match Better Auth defaults.
+-- Uses plural table names with schema mapping in Better Auth config.
 
 -- Add session "active organization" pointer used by the organization plugin.
 ALTER TABLE sessions ADD COLUMN activeOrganizationId TEXT;
 CREATE INDEX IF NOT EXISTS idx_sessions_activeOrganizationId ON sessions(activeOrganizationId);
 
--- Organization table
-CREATE TABLE IF NOT EXISTS organization (
+-- Organizations table
+CREATE TABLE IF NOT EXISTS organizations (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
@@ -16,25 +16,25 @@ CREATE TABLE IF NOT EXISTS organization (
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_organization_slug ON organization(slug);
+CREATE INDEX IF NOT EXISTS idx_organizations_slug ON organizations(slug);
 
--- Member table (user <-> organization)
-CREATE TABLE IF NOT EXISTS member (
+-- Members table (user <-> organization)
+CREATE TABLE IF NOT EXISTS members (
     id TEXT PRIMARY KEY NOT NULL,
     organizationId TEXT NOT NULL,
     userId TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'member',
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (organizationId) REFERENCES organization(id) ON DELETE CASCADE,
+    FOREIGN KEY (organizationId) REFERENCES organizations(id) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (organizationId, userId)
 );
 
-CREATE INDEX IF NOT EXISTS idx_member_organizationId ON member(organizationId);
-CREATE INDEX IF NOT EXISTS idx_member_userId ON member(userId);
+CREATE INDEX IF NOT EXISTS idx_members_organizationId ON members(organizationId);
+CREATE INDEX IF NOT EXISTS idx_members_userId ON members(userId);
 
--- Invitation table (email-based onboarding)
-CREATE TABLE IF NOT EXISTS invitation (
+-- Invitations table (email-based onboarding)
+CREATE TABLE IF NOT EXISTS invitations (
     id TEXT PRIMARY KEY NOT NULL,
     organizationId TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -43,10 +43,10 @@ CREATE TABLE IF NOT EXISTS invitation (
     expiresAt DATETIME NOT NULL,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     inviterId TEXT NOT NULL,
-    FOREIGN KEY (organizationId) REFERENCES organization(id) ON DELETE CASCADE,
+    FOREIGN KEY (organizationId) REFERENCES organizations(id) ON DELETE CASCADE,
     FOREIGN KEY (inviterId) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_invitation_organizationId ON invitation(organizationId);
-CREATE INDEX IF NOT EXISTS idx_invitation_email ON invitation(email);
-CREATE INDEX IF NOT EXISTS idx_invitation_inviterId ON invitation(inviterId);
+CREATE INDEX IF NOT EXISTS idx_invitations_organizationId ON invitations(organizationId);
+CREATE INDEX IF NOT EXISTS idx_invitations_email ON invitations(email);
+CREATE INDEX IF NOT EXISTS idx_invitations_inviterId ON invitations(inviterId);

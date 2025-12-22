@@ -208,6 +208,7 @@ export function buildResolvedAuthConfig(
 			organization({
 				// Organization membership support (users <-> organizations).
 				// We keep teams disabled for now; can be enabled later without breaking the API surface.
+				// Note: Prisma's @@map directives handle the plural table name mapping.
 				teams: { enabled: false },
 				sendInvitationEmail: async (data) => {
 					const apiKey = env.MANDRILL_API_KEY;

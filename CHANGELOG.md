@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/boletrics/auth-svc/compare/v1.3.1...v1.3.2) (2025-12-22)
+
+
+### Bug Fixes
+
+* renamed the organization name template ([29afe12](https://github.com/boletrics/auth-svc/commit/29afe12d6c1a990ba561c6da1e1ad9c21e2e3009))
+
 ## [1.3.1](https://github.com/boletrics/auth-svc/compare/v1.3.0...v1.3.1) (2025-12-22)
 
 

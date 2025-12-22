@@ -59,6 +59,12 @@ export type Bindings = Env & {
 	 */
 	AUTH_FRONTEND_URL?: string;
 	/**
+	 * Partner application URL for organization-related flows.
+	 * Used to construct URLs in emails (e.g., invitation acceptance).
+	 * Example: `https://partner.boletrics.workers.dev`
+	 */
+	PARTNER_APP_URL?: string;
+	/**
 	 * Cloudflare Turnstile secret key for bot protection.
 	 * Used to verify Turnstile tokens on password reset requests.
 	 * Configured via Cloudflare Dashboard secrets.

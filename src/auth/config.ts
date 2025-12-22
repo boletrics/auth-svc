@@ -219,14 +219,15 @@ export function buildResolvedAuthConfig(
 						return;
 					}
 
-					const frontendBaseUrl =
-						env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
+					// Invitation acceptance happens in the partner app, not the auth app
+					const partnerAppUrl =
+						env.PARTNER_APP_URL || "https://partner.boletrics.workers.dev";
 
 					const invitationId = data.invitation?.id ?? data.id ?? "";
 
 					const inviteUrl = invitationId
-						? `${frontendBaseUrl}/invitations/accept?invitationId=${encodeURIComponent(invitationId)}`
-						: `${frontendBaseUrl}/invitations`;
+						? `${partnerAppUrl}/invitations/accept?invitationId=${encodeURIComponent(invitationId)}`
+						: `${partnerAppUrl}/invitations`;
 
 					const organizationName = data.organization?.name ?? "tu organización";
 					// inviter is a member with nested user info

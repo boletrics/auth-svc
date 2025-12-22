@@ -26,5 +26,6 @@
 		"BETTER_AUTH_URL": "https://auth-svc.boletrics.workers.dev",
 		"AUTH_TRUSTED_ORIGINS": "https://*.boletrics.workers.dev",
 		"AUTH_FRONTEND_URL": "https://auth.boletrics.workers.dev",
+		"PARTNER_APP_URL": "https://partner.boletrics.workers.dev",
 	},
 }

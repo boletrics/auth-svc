@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/boletrics/auth-svc/compare/v1.2.1...v1.3.0) (2025-12-22)
+
+
+### Features
+
+* Add Better Auth organization plugin ([c145df5](https://github.com/boletrics/auth-svc/commit/c145df564b6e7cc585986204af5c9a1b6a1650de))
+
 ## [1.2.1](https://github.com/boletrics/auth-svc/compare/v1.2.0...v1.2.1) (2025-12-21)
 
 

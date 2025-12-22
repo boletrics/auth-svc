@@ -15,6 +15,12 @@ import {
 	AuthJwksEndpoint,
 	AuthForgotPasswordEndpoint,
 	AuthResetPasswordEndpoint,
+	AuthOrganizationCreateEndpoint,
+	AuthOrganizationListEndpoint,
+	AuthOrganizationSetActiveEndpoint,
+	AuthOrganizationInviteMemberEndpoint,
+	AuthOrganizationAcceptInvitationEndpoint,
+	AuthOrganizationListMembersEndpoint,
 } from "./endpoints/auth/openapi";
 
 // Start a Hono app
@@ -95,6 +101,26 @@ openapi.get("/api/auth/session", AuthSessionEndpoint);
 openapi.get("/api/auth/jwks", AuthJwksEndpoint);
 openapi.post("/api/auth/forgot-password", AuthForgotPasswordEndpoint);
 openapi.post("/api/auth/reset-password", AuthResetPasswordEndpoint);
+
+// Better Auth organization plugin (documented only; implemented by Better Auth)
+openapi.post("/api/auth/organization/create", AuthOrganizationCreateEndpoint);
+openapi.get("/api/auth/organization/list", AuthOrganizationListEndpoint);
+openapi.post(
+	"/api/auth/organization/set-active",
+	AuthOrganizationSetActiveEndpoint,
+);
+openapi.post(
+	"/api/auth/organization/invite-member",
+	AuthOrganizationInviteMemberEndpoint,
+);
+openapi.post(
+	"/api/auth/organization/accept-invitation",
+	AuthOrganizationAcceptInvitationEndpoint,
+);
+openapi.get(
+	"/api/auth/organization/list-members",
+	AuthOrganizationListMembersEndpoint,
+);
 
 // Register other endpoints
 openapi.post("/dummy/:slug", DummyEndpoint);

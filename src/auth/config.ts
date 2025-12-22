@@ -1,5 +1,6 @@
 import type { BetterAuthOptions } from "better-auth";
 import { jwt } from "better-auth/plugins/jwt";
+import { organization } from "better-auth/plugins/organization";
 
 import type { Bindings, BoletricsEnvironment } from "../types/bindings";
 import {
@@ -202,6 +203,11 @@ export function buildResolvedAuthConfig(
 				jwt: {
 					expirationTime: resolvedEnv === "production" ? "15m" : "30m",
 				},
+			}),
+			organization({
+				// Organization membership support (users <-> organizations).
+				// We keep teams disabled for now; can be enabled later without breaking the API surface.
+				teams: { enabled: false },
 			}),
 		],
 		session: {

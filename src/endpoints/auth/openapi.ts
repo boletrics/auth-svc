@@ -240,3 +240,184 @@ export class AuthResetPasswordEndpoint extends OpenAPIRoute {
 		throw new Error("This endpoint is handled by Better Auth");
 	}
 }
+
+// --- Organization plugin endpoints (Better Auth) ---
+
+export class AuthOrganizationCreateEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "Create a new organization",
+		operationId: "auth-organization-create",
+		request: {
+			body: contentJson(
+				z.object({
+					name: z.string(),
+					slug: z.string(),
+					logo: z.string().optional(),
+					metadata: z.record(z.string(), z.any()).optional(),
+					keepCurrentActiveOrganization: z.boolean().optional(),
+				}),
+			),
+		},
+		responses: {
+			"200": {
+				description: "Organization created",
+				...contentJson(SuccessResponseSchema),
+			},
+			"400": {
+				description: "Bad request",
+				...contentJson(ErrorResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}
+
+export class AuthOrganizationListEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "List organizations for the current user",
+		operationId: "auth-organization-list",
+		responses: {
+			"200": {
+				description: "Organizations",
+				...contentJson(SuccessResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}
+
+export class AuthOrganizationSetActiveEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "Set the active organization for the current session",
+		operationId: "auth-organization-set-active",
+		request: {
+			body: contentJson(
+				z.object({
+					organizationId: z.string(),
+				}),
+			),
+		},
+		responses: {
+			"200": {
+				description: "Active organization updated",
+				...contentJson(SuccessResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}
+
+export class AuthOrganizationInviteMemberEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "Invite a user to an organization by email",
+		operationId: "auth-organization-invite-member",
+		request: {
+			body: contentJson(
+				z.object({
+					email: z.string().email(),
+					role: z.union([z.string(), z.array(z.string())]),
+					organizationId: z.string().optional(),
+					resend: z.boolean().optional(),
+				}),
+			),
+		},
+		responses: {
+			"200": {
+				description: "Invitation created",
+				...contentJson(SuccessResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}
+
+export class AuthOrganizationAcceptInvitationEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "Accept an organization invitation",
+		operationId: "auth-organization-accept-invitation",
+		request: {
+			body: contentJson(
+				z.object({
+					invitationId: z.string(),
+				}),
+			),
+		},
+		responses: {
+			"200": {
+				description: "Invitation accepted",
+				...contentJson(SuccessResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}
+
+export class AuthOrganizationListMembersEndpoint extends OpenAPIRoute {
+	public schema = {
+		tags: ["Organizations"],
+		summary: "List members in an organization",
+		operationId: "auth-organization-list-members",
+		request: {
+			query: z.object({
+				organizationId: z.string().optional(),
+				organizationSlug: z.string().optional(),
+				limit: z.union([z.string(), z.number()]).optional(),
+				offset: z.union([z.string(), z.number()]).optional(),
+			}),
+		},
+		responses: {
+			"200": {
+				description: "Members",
+				...contentJson(SuccessResponseSchema),
+			},
+			"401": {
+				description: "Unauthorized",
+				...contentJson(ErrorResponseSchema),
+			},
+		},
+	};
+
+	public async handle(_c: AppContext) {
+		throw new Error("This endpoint is handled by Better Auth");
+	}
+}

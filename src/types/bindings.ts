@@ -10,8 +10,10 @@ export type Bindings = Env & {
 	/**
 	 * KV namespace for secondary storage (sessions, rate limiting).
 	 * Provides faster access than D1 for high-frequency operations.
+	 *
+	 * Optional: if not configured, Better Auth falls back to DB-only behavior.
 	 */
-	KV: KVNamespace;
+	KV?: KVNamespace;
 
 	/**
 	 * Environment identifier (local, dev, qa, production, preview, test)

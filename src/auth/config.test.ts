@@ -51,6 +51,14 @@ describe("buildResolvedAuthConfig", () => {
 				(plugin: any) => plugin?.id === "jwt",
 			),
 		).toBe(true);
+		// Organization plugin is enabled by default
+		expect(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(config.options as any).plugins?.some(
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				(plugin: any) => plugin?.id === "organization",
+			),
+		).toBe(true);
 	});
 
 	it("uses boletrics.workers.dev for QA environment (no separate QA domain)", () => {

@@ -39,12 +39,14 @@ export function getBetterAuthContext(
 	}
 
 	const prisma = createPrismaClient(env.DB);
-	const secondaryStorage = createKVSecondaryStorage(env.KV);
+	const secondaryStorage = env.KV
+		? createKVSecondaryStorage(env.KV)
+		: undefined;
 
 	const auth = betterAuth({
 		...resolved.options,
 		database: prismaAdapter(prisma, { provider: "sqlite", transaction: false }),
-		secondaryStorage,
+		...(secondaryStorage ? { secondaryStorage } : {}),
 	});
 
 	authCache.set(resolved.cacheKey, { auth });

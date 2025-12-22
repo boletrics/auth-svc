@@ -4,6 +4,13 @@
  */
 
 import { TEMPLATE_IMAGES } from "./constants";
+export type OrganizationInvitationEmail = {
+	email: string;
+	inviteUrl: string;
+	organizationName: string;
+	inviterName: string;
+	role?: string;
+};
 
 const MANDRILL_API_BASE = "https://mandrillapp.com/api/1.0";
 
@@ -175,6 +182,41 @@ export async function sendVerificationEmail(
 		// Log error but don't throw - we don't want to expose email sending failures
 		console.error("[Mandrill] Failed to send verification email", {
 			toEmail,
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
+}
+
+/**
+ * Sends an organization invitation email using Mandrill template.
+ *
+ * @param apiKey - Mandrill API key
+ * @param invitation - Invitation email payload (org name, inviter, link)
+ * @param templateName - Mandrill template name (default: boletrics-auth-organization-invitation-template)
+ */
+export async function sendOrganizationInvitationEmail(
+	apiKey: string,
+	invitation: OrganizationInvitationEmail,
+	templateName = "boletrics-auth-organization-invitation-template",
+): Promise<void> {
+	try {
+		await sendMandrillTemplate(apiKey, {
+			to: [{ email: invitation.email, type: "to" }],
+			from_email: "noreply@boletrics.algenium.dev",
+			from_name: "Boletrics",
+			subject: `Invitación a unirse a ${invitation.organizationName}`,
+			template_name: templateName,
+			global_merge_vars: [
+				{ name: "org_name", content: invitation.organizationName },
+				{ name: "inviter_name", content: invitation.inviterName },
+				{ name: "invite_url", content: invitation.inviteUrl },
+				{ name: "role", content: invitation.role ?? "member" },
+			],
+			images: TEMPLATE_IMAGES,
+		});
+	} catch (error) {
+		console.error("[Mandrill] Failed to send org invitation email", {
+			toEmail: invitation.email,
 			error: error instanceof Error ? error.message : String(error),
 		});
 	}

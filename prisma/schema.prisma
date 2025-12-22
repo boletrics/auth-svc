@@ -113,7 +113,7 @@ model Organization {
   members     Member[]
   invitations Invitation[]
 
-  @@map("organizations")
+  @@map("organization")
   @@index([slug])
 }
 
@@ -127,7 +127,7 @@ model Member {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("members")
+  @@map("member")
   @@index([organizationId])
   @@index([userId])
   @@unique([organizationId, userId])
@@ -146,7 +146,7 @@ model Invitation {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   inviter      User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
-  @@map("invitations")
+  @@map("invitation")
   @@index([organizationId])
   @@index([email])
   @@index([inviterId])

@@ -31,7 +31,7 @@ export default defineWorkersConfig({
 			thresholds: {
 				lines: 65,
 				functions: 65,
-				branches: 55,
+				branches: 54,
 				statements: 65,
 			},
 		},

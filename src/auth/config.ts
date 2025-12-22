@@ -7,6 +7,7 @@ import {
 	sendPasswordResetEmail,
 	sendVerificationEmail,
 } from "../utils/mandrill";
+import { sendOrganizationInvitationEmail } from "../utils/mandrill";
 
 const BASE_PATH = "/api/auth";
 const ORG_SLUG = "boletrics";
@@ -208,6 +209,55 @@ export function buildResolvedAuthConfig(
 				// Organization membership support (users <-> organizations).
 				// We keep teams disabled for now; can be enabled later without breaking the API surface.
 				teams: { enabled: false },
+				sendInvitationEmail: async (data) => {
+					const apiKey = env.MANDRILL_API_KEY;
+					if (!apiKey) {
+						console.error(
+							"[Org Invitation] MANDRILL_API_KEY is not configured; invitation email skipped",
+						);
+						return;
+					}
+
+					const frontendBaseUrl =
+						env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
+
+					const invitationId = data.invitation?.id ?? data.id ?? "";
+
+					const inviteUrl = invitationId
+						? `${frontendBaseUrl}/invitations/accept?invitationId=${encodeURIComponent(invitationId)}`
+						: `${frontendBaseUrl}/invitations`;
+
+					const organizationName = data.organization?.name ?? "tu organización";
+					// inviter is a member with nested user info
+					const inviterUser = data.inviter?.user;
+					const inviterName =
+						inviterUser?.name ?? inviterUser?.email ?? "Boletrics";
+					const email = data.email ?? "";
+
+					if (!email) {
+						console.error(
+							"[Org Invitation] Missing recipient email; invitation email skipped",
+						);
+						return;
+					}
+
+					const invitationPromise = sendOrganizationInvitationEmail(apiKey, {
+						email,
+						inviteUrl,
+						organizationName,
+						inviterName,
+						role: data.role,
+					});
+
+					if (
+						executionContext &&
+						typeof executionContext.waitUntil === "function"
+					) {
+						executionContext.waitUntil(invitationPromise);
+					} else {
+						void invitationPromise;
+					}
+				},
 			}),
 		],
 		session: {

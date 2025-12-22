@@ -1,3 +1,11 @@
+## [1.3.1](https://github.com/boletrics/auth-svc/compare/v1.3.0...v1.3.1) (2025-12-22)
+
+
+### Bug Fixes
+
+* **org:** align db tables with better-auth defaults ([79e4da4](https://github.com/boletrics/auth-svc/commit/79e4da4296e62f11860c12ab4b41477ef90e9f2f))
+* **org:** use plural table names with Prisma @[@map](https://github.com/map) ([591d90c](https://github.com/boletrics/auth-svc/commit/591d90c26e9c995fa57292b172f6e52dc77ce8a2))
+
 # [1.3.0](https://github.com/boletrics/auth-svc/compare/v1.2.1...v1.3.0) (2025-12-22)
 
 

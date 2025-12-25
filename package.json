@@ -58,6 +58,8 @@
 		"deploy:prod": "wrangler deploy --config wrangler.prod.jsonc",
 		"deploy:dev": "wrangler deploy --config wrangler.jsonc",
 		"dev": "npm run seedLocalDb && wrangler dev",
+		"dev:local": "npm run seedLocalDb:local && wrangler dev --config wrangler.local.jsonc --port 8787",
+		"seedLocalDb:local": "wrangler d1 migrations apply DB --local --config wrangler.local.jsonc",
 		"format": "prettier . --write",
 		"format:check": "prettier . --check",
 		"lint": "eslint .",

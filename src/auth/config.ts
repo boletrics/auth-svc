@@ -6,11 +6,7 @@ import { organization } from "better-auth/plugins/organization";
 import { openAPI } from "better-auth/plugins";
 
 import type { Bindings, BoletricsEnvironment } from "../types/bindings";
-import {
-	sendPasswordResetEmail,
-	sendVerificationEmail,
-	sendOtpEmail,
-} from "../utils/mandrill";
+import { sendPasswordResetEmail, sendOtpEmail } from "../utils/mandrill";
 import { sendOrganizationInvitationEmail } from "../utils/mandrill";
 
 const BASE_PATH = "/api/auth";
@@ -151,64 +147,8 @@ export function buildResolvedAuthConfig(
 				console.log(`Password reset completed for user: ${user.email}`);
 			},
 		},
-		emailVerification: {
-			sendVerificationEmail: async ({ user, url, token }, _request) => {
-				const apiKey = env.MANDRILL_API_KEY;
-				if (!apiKey) {
-					console.error(
-						"[Email Verification] MANDRILL_API_KEY is not configured",
-					);
-					return;
-				}
-
-				// Construct verify URL that points to Better Auth's endpoint
-				// but redirects to the auth frontend after verification
-				const authServiceBaseUrl =
-					env.BETTER_AUTH_URL || "https://auth-svc.boletrics.workers.dev";
-				const frontendBaseUrl =
-					env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
-
-				// The callback URL is where Better Auth redirects after successful verification
-				// It should point to the auth frontend's verify page with success flag
-				const callbackURL = `${frontendBaseUrl}/verify?success=true`;
-
-				// Construct the full verification URL
-				// - Points to Better Auth's verify-email endpoint (does actual verification)
-				// - callbackURL tells Better Auth where to redirect after verification
-				const verifyUrl = `${authServiceBaseUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}&callbackURL=${encodeURIComponent(callbackURL)}`;
-
-				// Log the URL transformation for debugging
-				console.log(
-					`[Email Verification] Original URL: ${url}, New URL: ${verifyUrl}`,
-				);
-
-				// Use waitUntil for Cloudflare Workers to ensure async operation completes
-				// Better Auth documentation recommends not awaiting email sending to prevent timing attacks
-				const emailPromise = sendVerificationEmail(
-					apiKey,
-					user.email,
-					user.name || user.email,
-					verifyUrl,
-					"boletrics-auth-email-verification-template",
-				);
-
-				// Use waitUntil if execution context is available (Cloudflare Workers)
-				if (
-					executionContext &&
-					typeof executionContext.waitUntil === "function"
-				) {
-					executionContext.waitUntil(emailPromise);
-				} else {
-					// Fallback: ensure promise completes and errors are handled
-					emailPromise.catch((error) => {
-						console.error(
-							"[Email Verification] Unhandled email promise rejection",
-							error,
-						);
-					});
-				}
-			},
-		},
+		// Note: Email verification is handled by the emailOTP plugin below
+		// No link-based verification - all verification uses OTP codes
 		plugins: [
 			openAPI({
 				// Better Auth's OpenAPI plugin generates:
@@ -299,6 +239,9 @@ export function buildResolvedAuthConfig(
 				// Replace default email verification link with OTP
 				// This ensures signup flow stays in-app and preserves redirectTo
 				disableSignUp: false,
+				// Override the default email verification with OTP-based verification
+				// This means no email links are sent - only OTP codes
+				sendVerificationOnSignUp: true,
 				async sendVerificationOTP({ email, otp, type }) {
 					const apiKey = env.MANDRILL_API_KEY;
 					if (!apiKey) {

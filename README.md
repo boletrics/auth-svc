@@ -83,7 +83,7 @@ pnpm prisma:generate
 
 ## Project Structure
 
-```
+```text
 auth-svc/
 ├── src/
 │   ├── index.ts                # Main Hono router

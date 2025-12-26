@@ -1,9 +1,8 @@
 import type { BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins/admin";
-import { emailOTP } from "better-auth/plugins/email-otp";
 import { jwt } from "better-auth/plugins/jwt";
 import { organization } from "better-auth/plugins/organization";
-import { openAPI } from "better-auth/plugins";
+import { emailOTP, openAPI } from "better-auth/plugins";
 
 import type { Bindings, BoletricsEnvironment } from "../types/bindings";
 import { sendPasswordResetEmail, sendOtpEmail } from "../utils/mandrill";

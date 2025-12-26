@@ -81,7 +81,7 @@ app.get("/docsz", (c) => {
 registerBetterAuthRoutes(app);
 
 // Register avatar upload endpoints (Cloudflare Images)
-// These require authentication via Better Auth session
+// Authentication is enforced via middleware in avatarsRouter
 app.route("/avatars", avatarsRouter);
 
 // Register other endpoints

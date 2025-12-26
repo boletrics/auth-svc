@@ -8,6 +8,7 @@ import {
 	CloudflareImagesError,
 	type CloudflareImagesConfig,
 } from "../utils/cloudflare-images";
+import { getBetterAuthContext } from "../auth/instance";
 
 // Request schema for upload URL
 const getUploadUrlRequestSchema = z.object({
@@ -19,7 +20,40 @@ const getUploadUrlRequestSchema = z.object({
 export const avatarsRouter = new Hono<{ Bindings: Bindings }>();
 
 /**
- * Get Cloudflare Images config from environment
+ * Authentication middleware for avatar endpoints.
+ * Validates the session using Better Auth.
+ */
+avatarsRouter.use("*", async (c, next) => {
+	const executionContext = (c as unknown as { executionCtx?: ExecutionContext })
+		.executionCtx;
+
+	const { auth } = getBetterAuthContext(c.env, executionContext);
+
+	// Use Better Auth's session validation
+	const session = await auth.api.getSession({
+		headers: c.req.raw.headers,
+	});
+
+	if (!session) {
+		return c.json(
+			{
+				success: false,
+				errors: [
+					{ code: 401, message: "Unauthorized: Valid session required" },
+				],
+			},
+			401,
+		);
+	}
+
+	// Store session in context for use in handlers
+	c.set("session" as never, session as never);
+	return next();
+});
+
+/**
+ * Get Cloudflare Images config from environment for upload/delete operations.
+ * Requires all three config values.
  */
 function getImagesConfig(env: Bindings): CloudflareImagesConfig {
 	const accountId = env.CLOUDFLARE_ACCOUNT_ID;
@@ -72,12 +106,15 @@ avatarsRouter.post("/upload-url", async (c) => {
 		});
 	} catch (error) {
 		if (error instanceof CloudflareImagesError) {
+			// Map Cloudflare API error codes to HTTP status codes
+			const statusCode =
+				error.code === 401 || error.code === 403 ? error.code : 500;
 			return c.json(
 				{
 					success: false,
 					errors: [{ code: error.code ?? 500, message: error.message }],
 				},
-				error.code === 401 ? 401 : 500,
+				statusCode as 401 | 403 | 500,
 			);
 		}
 
@@ -158,27 +195,30 @@ avatarsRouter.delete("/:imageId", async (c) => {
 /**
  * GET /avatars/delivery-url/:imageId
  * Get the delivery URL for an avatar.
+ * This endpoint only requires CLOUDFLARE_IMAGES_HASH to construct the URL.
  */
 avatarsRouter.get("/delivery-url/:imageId", async (c) => {
 	const imageId = c.req.param("imageId");
 	const variant = c.req.query("variant") ?? "avatar";
 
-	if (!imageId) {
+	// Only imagesHash is needed to construct delivery URLs
+	const imagesHash = c.env.CLOUDFLARE_IMAGES_HASH;
+	if (!imagesHash) {
 		return c.json(
 			{
 				success: false,
-				errors: [{ code: 400, message: "Image ID is required" }],
+				errors: [
+					{ code: 500, message: "CLOUDFLARE_IMAGES_HASH not configured" },
+				],
 			},
-			400,
+			500,
 		);
 	}
 
-	const config = getImagesConfig(c.env);
-	const deliveryUrl = getImageDeliveryUrl(config.imagesHash, imageId, variant);
+	const deliveryUrl = getImageDeliveryUrl(imagesHash, imageId, variant);
 
 	return c.json({
 		success: true,
 		result: { deliveryUrl },
 	});
 });
-

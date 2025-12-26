@@ -1,9 +1,20 @@
-import { SELF } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
 import { describe, expect, it, vi } from "vitest";
 import { getOpenApiInfo } from "../../src/app-meta";
+import worker from "../../src/testWorker";
+
+const typedWorker = worker as unknown as {
+	fetch: (
+		request: Request,
+		env: unknown,
+		ctx: ExecutionContext,
+	) => Promise<Response>;
+};
+
+const TEST_SECRET = "test-secret-1234567890123456789012345";
 
 describe("API docs", () => {
-	it("serves Scalar API reference at /docsz", async () => {
+	it("serves Scalar API reference at /docsz with Better Auth OpenAPI spec", async () => {
 		const res = await SELF.fetch("http://local.test/docsz");
 		const html = await res.text();
 
@@ -12,6 +23,8 @@ describe("API docs", () => {
 		// High-signal markers that we are serving Scalar (not the old viewer).
 		expect(html).toContain("@scalar/api-reference");
 		expect(html).toContain("api-reference");
+		// Verify it points to Better Auth's OpenAPI spec
+		expect(html).toContain("/api/auth/open-api/generate-schema");
 	});
 
 	it("serves app metadata JSON at /", async () => {
@@ -62,6 +75,35 @@ describe("API docs", () => {
 		expect(res.status).toBe(200);
 		expect(body).toHaveProperty("openapi");
 		expect(body).toHaveProperty("info");
+	});
+
+	it("serves Better Auth OpenAPI schema at /api/auth/open-api/generate-schema", async () => {
+		const request = new Request(
+			"http://local.test/api/auth/open-api/generate-schema",
+		);
+		const res = await typedWorker.fetch(
+			request,
+			{
+				...env,
+				ENVIRONMENT: "local",
+				BETTER_AUTH_SECRET: TEST_SECRET,
+			},
+			{} as ExecutionContext,
+		);
+
+		expect(res.status).toBe(200);
+
+		const body = (await res.json()) as {
+			openapi?: string;
+			info?: unknown;
+			paths?: Record<string, unknown>;
+		};
+
+		expect(body).toHaveProperty("openapi");
+		expect(body).toHaveProperty("info");
+		expect(body).toHaveProperty("paths");
+		// Verify some key Better Auth endpoints are documented
+		expect(body.paths).toBeDefined();
 	});
 
 	it("builds OpenAPI description fallback when package description is missing", () => {

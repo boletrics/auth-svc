@@ -2,6 +2,7 @@ import type { BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins/admin";
 import { jwt } from "better-auth/plugins/jwt";
 import { organization } from "better-auth/plugins/organization";
+import { openAPI } from "better-auth/plugins";
 
 import type { Bindings, BoletricsEnvironment } from "../types/bindings";
 import {
@@ -197,6 +198,12 @@ export function buildResolvedAuthConfig(
 			},
 		},
 		plugins: [
+			openAPI({
+				// Better Auth's OpenAPI plugin generates:
+				// 1. A reference page at /api/auth/reference (Scalar UI)
+				// 2. The JSON schema endpoint at /api/auth/open-api/generate-schema
+				path: "/reference",
+			}),
 			jwt({
 				jwks: {
 					// Exposed as `${basePath}/jwks` (i.e. `/api/auth/jwks`)

@@ -1,5 +1,6 @@
 import type { BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins/admin";
+import { emailOTP } from "better-auth/plugins/email-otp";
 import { jwt } from "better-auth/plugins/jwt";
 import { organization } from "better-auth/plugins/organization";
 import { openAPI } from "better-auth/plugins";
@@ -8,6 +9,7 @@ import type { Bindings, BoletricsEnvironment } from "../types/bindings";
 import {
 	sendPasswordResetEmail,
 	sendVerificationEmail,
+	sendOtpEmail,
 } from "../utils/mandrill";
 import { sendOrganizationInvitationEmail } from "../utils/mandrill";
 
@@ -134,8 +136,13 @@ export function buildResolvedAuthConfig(
 				) {
 					executionContext.waitUntil(emailPromise);
 				} else {
-					// Fallback: void for non-Cloudflare environments
-					void emailPromise;
+					// Fallback: ensure promise completes and errors are handled
+					emailPromise.catch((error) => {
+						console.error(
+							"[Password Reset] Unhandled email promise rejection",
+							error,
+						);
+					});
 				}
 			},
 			onPasswordReset: async ({ user }, _request) => {
@@ -192,8 +199,13 @@ export function buildResolvedAuthConfig(
 				) {
 					executionContext.waitUntil(emailPromise);
 				} else {
-					// Fallback: void for non-Cloudflare environments
-					void emailPromise;
+					// Fallback: ensure promise completes and errors are handled
+					emailPromise.catch((error) => {
+						console.error(
+							"[Email Verification] Unhandled email promise rejection",
+							error,
+						);
+					});
 				}
 			},
 		},
@@ -271,7 +283,52 @@ export function buildResolvedAuthConfig(
 					) {
 						executionContext.waitUntil(invitationPromise);
 					} else {
-						void invitationPromise;
+						// Fallback: ensure promise completes and errors are handled
+						invitationPromise.catch((error) => {
+							console.error(
+								"[Org Invitation] Unhandled email promise rejection",
+								error,
+							);
+						});
+					}
+				},
+			}),
+			emailOTP({
+				otpLength: 6,
+				expiresIn: 300, // 5 minutes
+				// Replace default email verification link with OTP
+				// This ensures signup flow stays in-app and preserves redirectTo
+				disableSignUp: false,
+				async sendVerificationOTP({ email, otp, type }) {
+					const apiKey = env.MANDRILL_API_KEY;
+					if (!apiKey) {
+						console.error(
+							"[Email OTP] MANDRILL_API_KEY is not configured; OTP email skipped",
+						);
+						return;
+					}
+
+					// Use waitUntil for Cloudflare Workers to ensure async operation completes
+					const emailPromise = sendOtpEmail(
+						apiKey,
+						email,
+						email.split("@")[0], // Use email prefix as fallback name
+						otp,
+						type,
+					);
+
+					if (
+						executionContext &&
+						typeof executionContext.waitUntil === "function"
+					) {
+						executionContext.waitUntil(emailPromise);
+					} else {
+						emailPromise.catch((error) => {
+							console.error(
+								"[Email OTP] Unhandled email promise rejection",
+								error,
+							);
+						});
 					}
 				},
 			}),

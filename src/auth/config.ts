@@ -36,6 +36,7 @@ const RATE_LIMITS: Record<
 };
 
 const COOKIE_DOMAIN_BY_ENV: Partial<Record<BoletricsEnvironment, string>> = {
+	local: ".boletrics.workers.dev",
 	preview: ".boletrics.workers.dev",
 	dev: ".boletrics.workers.dev",
 	qa: ".boletrics.workers.dev",
@@ -58,6 +59,7 @@ const LOCAL_DEVELOPMENT_ORIGINS = [
 ];
 
 const CROSS_SUBDOMAIN_ENVS: ReadonlySet<BoletricsEnvironment> = new Set([
+	"local",
 	"preview",
 	"dev",
 	"qa",
@@ -306,7 +308,9 @@ function buildAdvancedOptions(
 	const advanced: BetterAuthOptions["advanced"] = {
 		disableCSRFCheck: env === "local" || env === "test",
 		disableOriginCheck: env === "local" || env === "test",
-		useSecureCookies: env !== "local" && env !== "test",
+		// Local uses HTTPS via Caddy, so secure cookies should be enabled
+		// Only test environment (non-HTTPS) should disable secure cookies
+		useSecureCookies: env !== "test",
 		// Explicitly set cookie path to "/" so cookies are accessible on all paths.
 		// Without this, cookies might only be sent to paths matching the basePath (/api/auth).
 		defaultCookieAttributes: {

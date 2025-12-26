@@ -114,7 +114,10 @@ describe("buildResolvedAuthConfig", () => {
 			buildEnvWithoutInternalToken({ ENVIRONMENT: "local" }),
 		);
 
-		expect(config.options.advanced?.crossSubDomainCookies).toBeUndefined();
+		expect(config.options.advanced?.crossSubDomainCookies).toEqual({
+			enabled: true,
+			domain: ".boletrics.workers.dev",
+		});
 		expect(config.options.trustedOrigins).toEqual(
 			expect.arrayContaining(["http://localhost:*", "https://localhost:*"]),
 		);

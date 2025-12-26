@@ -252,14 +252,13 @@ export function buildResolvedAuthConfig(
 						return;
 					}
 
+					const trimmedEmail = email.trim();
+					const userName = trimmedEmail.includes("@")
+						? trimmedEmail.split("@")[0]
+						: trimmedEmail || email;
+
 					// Use waitUntil for Cloudflare Workers to ensure async operation completes
-					const emailPromise = sendOtpEmail(
-						apiKey,
-						email,
-						email.split("@")[0], // Use email prefix as fallback name
-						otp,
-						type,
-					);
+					const emailPromise = sendOtpEmail(apiKey, email, userName, otp, type);
 
 					if (
 						executionContext &&

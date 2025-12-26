@@ -134,6 +134,8 @@ The service uses several Better Auth plugins:
 1. **Organization** - Multi-tenant support with roles
 2. **Admin** - Admin user role management
 3. **OpenAPI** - Auto-generated OpenAPI specification
+4. **JWT** - JSON Web Token support with a JWKS endpoint
+5. **Email OTP** - OTP-based verification that replaces email links
 
 See [BETTER_AUTH_REVIEW.md](./BETTER_AUTH_REVIEW.md) for detailed plugin documentation.
 

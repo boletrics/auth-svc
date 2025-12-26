@@ -150,4 +150,3 @@ export function extractImageId(url: string): string | null {
 	const match = url.match(/imagedelivery\.net\/[^/]+\/([^/]+)/);
 	return match?.[1] ?? null;
 }
-

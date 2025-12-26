@@ -181,4 +181,3 @@ avatarsRouter.get("/delivery-url/:imageId", async (c) => {
 		result: { deliveryUrl },
 	});
 });
-

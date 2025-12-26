@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/boletrics/auth-svc/compare/v1.5.0...v1.6.0) (2025-12-26)
+
+
+### Features
+
+* Integrate Better Auth OpenAPI plugin ([fa5a6e8](https://github.com/boletrics/auth-svc/commit/fa5a6e8beecd03a92eafc34ecaa25ea893860cd1))
+
 # [1.5.0](https://github.com/boletrics/auth-svc/compare/v1.4.1...v1.5.0) (2025-12-22)
 
 

@@ -32,7 +32,8 @@ export function getScalarHtml(meta: AppMeta): string {
   </head>
   <body>
     <!-- Scalar standalone auto-mount -->
-    <script id="api-reference" data-url="/openapi.json"></script>
+    <!-- Use Better Auth's OpenAPI spec at /api/auth/open-api/generate-schema -->
+    <script id="api-reference" data-url="/api/auth/open-api/generate-schema"></script>
     <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@latest/dist/browser/standalone.js"></script>
   </body>
 </html>`;

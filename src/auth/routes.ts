@@ -81,10 +81,14 @@ export function registerBetterAuthRoutes(app: Hono<{ Bindings: Bindings }>) {
 			// - /api/auth/jwks: JWKS must be publicly reachable for JWT verification
 			// - /api/auth/verify-email: Users click verification links in emails (direct browser navigation)
 			// - /api/auth/reset-password: Users click password reset links in emails (direct browser navigation)
+			// - /api/auth/reference: Better Auth OpenAPI reference page (Scalar UI)
+			// - /api/auth/open-api/generate-schema: Better Auth OpenAPI JSON schema endpoint
 			const isPublicRoute =
 				pathname === "/api/auth/jwks" ||
 				pathname === "/api/auth/verify-email" ||
-				pathname === "/api/auth/reset-password";
+				pathname === "/api/auth/reset-password" ||
+				pathname === "/api/auth/reference" ||
+				pathname === "/api/auth/open-api/generate-schema";
 
 			if (isPublicRoute) {
 				return handleAuthRequest(c, auth);

@@ -1,7 +1,20 @@
+import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 
-import { getTrustedOriginPatterns } from "../../src/middleware/cors";
+import worker from "../../src/testWorker";
+import {
+	getTrustedOriginPatterns,
+	createCorsMiddleware,
+} from "../../src/middleware/cors";
 import type { Bindings } from "../../src/types/bindings";
+
+const typedWorker = worker as unknown as {
+	fetch: (
+		request: Request,
+		env: unknown,
+		ctx: ExecutionContext,
+	) => Promise<Response>;
+};
 
 const SECRET = "test-secret-123456789012345678901234567890";
 
@@ -56,5 +69,130 @@ describe("getTrustedOriginPatterns", () => {
 		const patterns1 = getTrustedOriginPatterns(env1);
 		const patterns2 = getTrustedOriginPatterns(env2);
 		expect(patterns1).toBe(patterns2); // Same reference due to caching
+	});
+});
+
+describe("createCorsMiddleware", () => {
+	it("returns a middleware function", () => {
+		const middleware = createCorsMiddleware();
+		expect(typeof middleware).toBe("function");
+	});
+});
+
+describe("CORS middleware integration", () => {
+	it("does not apply CORS headers to auth routes (handled by Better Auth)", async () => {
+		const request = new Request("http://localhost/api/auth/session", {
+			method: "GET",
+			headers: {
+				origin: "https://app.boletrics.workers.dev",
+			},
+		});
+
+		const response = await typedWorker.fetch(
+			request,
+			{
+				...env,
+				ENVIRONMENT: "test",
+				BETTER_AUTH_SECRET: SECRET,
+			},
+			{} as ExecutionContext,
+		);
+
+		// Auth routes bypass the global CORS middleware, but Better Auth may add headers
+		expect(response.status).not.toBe(403);
+	});
+
+	it("applies CORS headers to non-auth routes with trusted origin", async () => {
+		const request = new Request("http://localhost/healthz", {
+			method: "GET",
+			headers: {
+				origin: "http://localhost:3000",
+			},
+		});
+
+		const response = await typedWorker.fetch(
+			request,
+			{
+				...env,
+				ENVIRONMENT: "local",
+				BETTER_AUTH_SECRET: SECRET,
+			},
+			{} as ExecutionContext,
+		);
+
+		expect(response.status).toBe(200);
+		// localhost:* is trusted in local environment
+		expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
+			"http://localhost:3000",
+		);
+	});
+
+	it("does not apply CORS headers to non-auth routes with untrusted origin", async () => {
+		const request = new Request("http://localhost/healthz", {
+			method: "GET",
+			headers: {
+				origin: "https://untrusted.com",
+			},
+		});
+
+		const response = await typedWorker.fetch(
+			request,
+			{
+				...env,
+				ENVIRONMENT: "test",
+				BETTER_AUTH_SECRET: SECRET,
+			},
+			{} as ExecutionContext,
+		);
+
+		expect(response.status).toBe(200);
+		// Untrusted origin should not get CORS headers
+		expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull();
+	});
+
+	it("handles requests without origin header", async () => {
+		const request = new Request("http://localhost/healthz", {
+			method: "GET",
+		});
+
+		const response = await typedWorker.fetch(
+			request,
+			{
+				...env,
+				ENVIRONMENT: "test",
+				BETTER_AUTH_SECRET: SECRET,
+			},
+			{} as ExecutionContext,
+		);
+
+		expect(response.status).toBe(200);
+		// No origin = no CORS headers needed
+		expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull();
+	});
+
+	it("handles OPTIONS preflight for non-auth routes", async () => {
+		const request = new Request("http://localhost/healthz", {
+			method: "OPTIONS",
+			headers: {
+				origin: "http://localhost:3000",
+				"Access-Control-Request-Method": "GET",
+			},
+		});
+
+		const response = await typedWorker.fetch(
+			request,
+			{
+				...env,
+				ENVIRONMENT: "local",
+				BETTER_AUTH_SECRET: SECRET,
+			},
+			{} as ExecutionContext,
+		);
+
+		// Should return 204 for preflight
+		expect(response.status).toBe(204);
+		expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
+			"http://localhost:3000",
+		);
 	});
 });

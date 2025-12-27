@@ -19,6 +19,10 @@ export interface DirectUploadResponse {
 	id: string;
 }
 
+/**
+ * Result from a completed image upload.
+ * Exported for use by callers who process upload completion webhooks.
+ */
 export interface ImageUploadResult {
 	id: string;
 	filename: string;

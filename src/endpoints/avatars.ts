@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import type { Bindings } from "../types/bindings";
+import { getBetterAuthContext } from "../auth/instance";
 import {
 	getDirectUploadUrl,
 	getImageDeliveryUrl,
@@ -17,6 +18,26 @@ const getUploadUrlRequestSchema = z.object({
 
 // Create router
 export const avatarsRouter = new Hono<{ Bindings: Bindings }>();
+
+/**
+ * Verify the user is authenticated.
+ */
+async function verifyAuthenticated(
+	env: Bindings,
+	request: Request,
+): Promise<{ isAuthenticated: boolean; userId?: string; error?: string }> {
+	const { auth } = getBetterAuthContext(env);
+
+	const session = await auth.api.getSession({
+		headers: request.headers,
+	});
+
+	if (!session?.user) {
+		return { isAuthenticated: false, error: "Not authenticated" };
+	}
+
+	return { isAuthenticated: true, userId: session.user.id };
+}
 
 /**
  * Get Cloudflare Images config from environment
@@ -39,8 +60,15 @@ function getImagesConfig(env: Bindings): CloudflareImagesConfig {
  * POST /avatars/upload-url
  * Get a direct upload URL for uploading an avatar to Cloudflare Images.
  * The client can then upload directly to this URL.
+ * Requires authentication.
  */
 avatarsRouter.post("/upload-url", async (c) => {
+	// Verify authentication
+	const authCheck = await verifyAuthenticated(c.env, c.req.raw);
+	if (!authCheck.isAuthenticated) {
+		return c.json({ error: authCheck.error }, 401);
+	}
+
 	try {
 		const body = await c.req.json().catch(() => ({}));
 		const parsed = getUploadUrlRequestSchema.safeParse(body);
@@ -50,6 +78,8 @@ avatarsRouter.post("/upload-url", async (c) => {
 			service: "auth-svc",
 			context: "avatar",
 			environment: c.env.ENVIRONMENT ?? "unknown",
+			// Always include the authenticated user's ID
+			uploadedBy: authCheck.userId ?? "unknown",
 		};
 
 		if (parsed.success && parsed.data.userId) {
@@ -72,12 +102,15 @@ avatarsRouter.post("/upload-url", async (c) => {
 		});
 	} catch (error) {
 		if (error instanceof CloudflareImagesError) {
+			// Handle 401 and 403 from Cloudflare API
+			const statusCode =
+				error.code === 401 || error.code === 403 ? error.code : 500;
 			return c.json(
 				{
 					success: false,
 					errors: [{ code: error.code ?? 500, message: error.message }],
 				},
-				error.code === 401 ? 401 : 500,
+				statusCode as 401 | 403 | 500,
 			);
 		}
 
@@ -103,20 +136,17 @@ avatarsRouter.post("/upload-url", async (c) => {
 /**
  * DELETE /avatars/:imageId
  * Delete an avatar from Cloudflare Images.
+ * Requires authentication.
  */
 avatarsRouter.delete("/:imageId", async (c) => {
+	// Verify authentication
+	const authCheck = await verifyAuthenticated(c.env, c.req.raw);
+	if (!authCheck.isAuthenticated) {
+		return c.json({ error: authCheck.error }, 401);
+	}
+
 	try {
 		const imageId = c.req.param("imageId");
-
-		if (!imageId) {
-			return c.json(
-				{
-					success: false,
-					errors: [{ code: 400, message: "Image ID is required" }],
-				},
-				400,
-			);
-		}
 
 		const config = getImagesConfig(c.env);
 		await deleteImage(config, imageId);
@@ -127,12 +157,17 @@ avatarsRouter.delete("/:imageId", async (c) => {
 		});
 	} catch (error) {
 		if (error instanceof CloudflareImagesError) {
+			// Handle 401, 403, and 404 from Cloudflare API
+			const statusCode =
+				error.code === 401 || error.code === 403 || error.code === 404
+					? error.code
+					: 500;
 			return c.json(
 				{
 					success: false,
 					errors: [{ code: error.code ?? 500, message: error.message }],
 				},
-				error.code === 404 ? 404 : 500,
+				statusCode as 401 | 403 | 404 | 500,
 			);
 		}
 
@@ -158,23 +193,27 @@ avatarsRouter.delete("/:imageId", async (c) => {
 /**
  * GET /avatars/delivery-url/:imageId
  * Get the delivery URL for an avatar.
+ * This endpoint is public since delivery URLs are publicly accessible.
  */
 avatarsRouter.get("/delivery-url/:imageId", async (c) => {
 	const imageId = c.req.param("imageId");
 	const variant = c.req.query("variant") ?? "avatar";
 
-	if (!imageId) {
+	// Only require CLOUDFLARE_IMAGES_HASH for delivery URL construction
+	const imagesHash = c.env.CLOUDFLARE_IMAGES_HASH;
+	if (!imagesHash) {
 		return c.json(
 			{
 				success: false,
-				errors: [{ code: 400, message: "Image ID is required" }],
+				errors: [
+					{ code: 500, message: "CLOUDFLARE_IMAGES_HASH not configured" },
+				],
 			},
-			400,
+			500,
 		);
 	}
 
-	const config = getImagesConfig(c.env);
-	const deliveryUrl = getImageDeliveryUrl(config.imagesHash, imageId, variant);
+	const deliveryUrl = getImageDeliveryUrl(imagesHash, imageId, variant);
 
 	return c.json({
 		success: true,

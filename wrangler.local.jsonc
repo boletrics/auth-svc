@@ -1,0 +1,36 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"compatibility_date": "2025-10-08",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "src/index.ts",
+	"name": "auth-svc",
+	"upload_source_maps": true,
+	"workers_dev": true,
+	"observability": {
+		"enabled": true,
+	},
+	// Use local persistent D1 database for development
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "auth-local",
+			"database_id": "local-auth-db",
+		},
+	],
+	// Use local persistent KV for development
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "local-auth-kv",
+		},
+	],
+	// Local development vars are loaded from .dev.vars file
+	// These are fallback values
+	"vars": {
+		"ENVIRONMENT": "local",
+		"BETTER_AUTH_URL": "https://auth-svc-local.boletrics.workers.dev",
+		"AUTH_TRUSTED_ORIGINS": "https://*-local.boletrics.workers.dev,https://localhost:*",
+		"AUTH_FRONTEND_URL": "https://auth-local.boletrics.workers.dev",
+		"PARTNER_APP_URL": "https://partner-local.boletrics.workers.dev",
+	},
+}

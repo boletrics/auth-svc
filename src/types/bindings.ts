@@ -70,4 +70,16 @@ export type Bindings = Env & {
 	 * Configured via Cloudflare Dashboard secrets.
 	 */
 	TURNSTILE_SECRET_KEY?: string;
+	/**
+	 * Cloudflare Account ID for Cloudflare Images API.
+	 */
+	CLOUDFLARE_ACCOUNT_ID?: string;
+	/**
+	 * Cloudflare Images API token with Images:Edit permission.
+	 */
+	CLOUDFLARE_IMAGES_TOKEN?: string;
+	/**
+	 * Cloudflare Images account hash for delivery URLs.
+	 */
+	CLOUDFLARE_IMAGES_HASH?: string;
 };

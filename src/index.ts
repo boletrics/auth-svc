@@ -2,6 +2,8 @@ import { ApiException, fromHono } from "chanfana";
 import { Hono } from "hono";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { DummyEndpoint } from "./endpoints/dummyEndpoint";
+import { avatarsRouter } from "./endpoints/avatars";
+import { adminOrganizationsRouter } from "./endpoints/admin-organizations";
 import pkg from "../package.json";
 import { getOpenApiInfo, getScalarHtml, type AppMeta } from "./app-meta";
 import { registerBetterAuthRoutes } from "./auth/routes";
@@ -78,6 +80,14 @@ app.get("/docsz", (c) => {
 // Register Better Auth routes (actual implementation - handles requests)
 // Better Auth's openAPI plugin automatically serves the OpenAPI spec at /api/auth/openapi.json
 registerBetterAuthRoutes(app);
+
+// Register avatar endpoints (Cloudflare Images)
+// Upload and delete require authentication; delivery URL lookup is public
+app.route("/avatars", avatarsRouter);
+
+// Register admin organization endpoints (requires admin role)
+// These allow platform admins to list and manage all organizations
+app.route("/admin/organizations", adminOrganizationsRouter);
 
 // Register other endpoints
 openapi.post("/dummy/:slug", DummyEndpoint);

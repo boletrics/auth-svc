@@ -2,13 +2,10 @@ import type { BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins/admin";
 import { jwt } from "better-auth/plugins/jwt";
 import { organization } from "better-auth/plugins/organization";
-import { openAPI } from "better-auth/plugins";
+import { emailOTP, openAPI } from "better-auth/plugins";
 
 import type { Bindings, BoletricsEnvironment } from "../types/bindings";
-import {
-	sendPasswordResetEmail,
-	sendVerificationEmail,
-} from "../utils/mandrill";
+import { sendPasswordResetEmail, sendOtpEmail } from "../utils/mandrill";
 import { sendOrganizationInvitationEmail } from "../utils/mandrill";
 
 const BASE_PATH = "/api/auth";
@@ -39,6 +36,7 @@ const RATE_LIMITS: Record<
 };
 
 const COOKIE_DOMAIN_BY_ENV: Partial<Record<BoletricsEnvironment, string>> = {
+	local: ".boletrics.workers.dev",
 	preview: ".boletrics.workers.dev",
 	dev: ".boletrics.workers.dev",
 	qa: ".boletrics.workers.dev",
@@ -61,6 +59,7 @@ const LOCAL_DEVELOPMENT_ORIGINS = [
 ];
 
 const CROSS_SUBDOMAIN_ENVS: ReadonlySet<BoletricsEnvironment> = new Set([
+	"local",
 	"preview",
 	"dev",
 	"qa",
@@ -103,100 +102,60 @@ export function buildResolvedAuthConfig(
 		emailAndPassword: {
 			enabled: true,
 			requireEmailVerification: true,
-			sendResetPassword: async ({ user, token }, _request) => {
-				const apiKey = env.MANDRILL_API_KEY;
-				if (!apiKey) {
-					console.error("[Password Reset] MANDRILL_API_KEY is not configured");
-					return;
-				}
+			sendResetPassword:
+				/* istanbul ignore next -- @preserve Mandrill email sending tested via integration */
+				async ({ user, token }, _request) => {
+					const apiKey = env.MANDRILL_API_KEY;
+					if (!apiKey) {
+						console.error(
+							"[Password Reset] MANDRILL_API_KEY is not configured",
+						);
+						return;
+					}
 
-				// Construct frontend URL with token for direct password reset
-				// Instead of using Better Auth's backend redirect URL, we send users
-				// directly to the frontend which calls the API to reset password
-				const frontendBaseUrl =
-					env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
-				const resetUrl = `${frontendBaseUrl}/recover/reset?token=${encodeURIComponent(token)}`;
+					// Construct frontend URL with token for direct password reset
+					// Instead of using Better Auth's backend redirect URL, we send users
+					// directly to the frontend which calls the API to reset password
+					const frontendBaseUrl =
+						env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
+					const resetUrl = `${frontendBaseUrl}/recover/reset?token=${encodeURIComponent(token)}`;
 
-				// Use waitUntil for Cloudflare Workers to ensure async operation completes
-				// Better Auth documentation recommends not awaiting email sending to prevent timing attacks
-				const emailPromise = sendPasswordResetEmail(
-					apiKey,
-					user.email,
-					user.name || user.email,
-					resetUrl,
-					"boletrics-auth-password-recovery-template",
-				);
-
-				// Use waitUntil if execution context is available (Cloudflare Workers)
-				if (
-					executionContext &&
-					typeof executionContext.waitUntil === "function"
-				) {
-					executionContext.waitUntil(emailPromise);
-				} else {
-					// Fallback: void for non-Cloudflare environments
-					void emailPromise;
-				}
-			},
-			onPasswordReset: async ({ user }, _request) => {
-				// Optional callback after password reset is successful
-				// Log for audit purposes or trigger additional actions
-				console.log(`Password reset completed for user: ${user.email}`);
-			},
-		},
-		emailVerification: {
-			sendVerificationEmail: async ({ user, url, token }, _request) => {
-				const apiKey = env.MANDRILL_API_KEY;
-				if (!apiKey) {
-					console.error(
-						"[Email Verification] MANDRILL_API_KEY is not configured",
+					// Use waitUntil for Cloudflare Workers to ensure async operation completes
+					// Better Auth documentation recommends not awaiting email sending to prevent timing attacks
+					const emailPromise = sendPasswordResetEmail(
+						apiKey,
+						user.email,
+						user.name || user.email,
+						resetUrl,
+						"boletrics-auth-password-recovery-template",
 					);
-					return;
-				}
 
-				// Construct verify URL that points to Better Auth's endpoint
-				// but redirects to the auth frontend after verification
-				const authServiceBaseUrl =
-					env.BETTER_AUTH_URL || "https://auth-svc.boletrics.workers.dev";
-				const frontendBaseUrl =
-					env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
-
-				// The callback URL is where Better Auth redirects after successful verification
-				// It should point to the auth frontend's verify page with success flag
-				const callbackURL = `${frontendBaseUrl}/verify?success=true`;
-
-				// Construct the full verification URL
-				// - Points to Better Auth's verify-email endpoint (does actual verification)
-				// - callbackURL tells Better Auth where to redirect after verification
-				const verifyUrl = `${authServiceBaseUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}&callbackURL=${encodeURIComponent(callbackURL)}`;
-
-				// Log the URL transformation for debugging
-				console.log(
-					`[Email Verification] Original URL: ${url}, New URL: ${verifyUrl}`,
-				);
-
-				// Use waitUntil for Cloudflare Workers to ensure async operation completes
-				// Better Auth documentation recommends not awaiting email sending to prevent timing attacks
-				const emailPromise = sendVerificationEmail(
-					apiKey,
-					user.email,
-					user.name || user.email,
-					verifyUrl,
-					"boletrics-auth-email-verification-template",
-				);
-
-				// Use waitUntil if execution context is available (Cloudflare Workers)
-				if (
-					executionContext &&
-					typeof executionContext.waitUntil === "function"
-				) {
-					executionContext.waitUntil(emailPromise);
-				} else {
-					// Fallback: void for non-Cloudflare environments
-					void emailPromise;
-				}
-			},
+					// Use waitUntil if execution context is available (Cloudflare Workers)
+					if (
+						executionContext &&
+						typeof executionContext.waitUntil === "function"
+					) {
+						executionContext.waitUntil(emailPromise);
+					} else {
+						// Fallback: ensure promise completes and errors are handled
+						emailPromise.catch((error) => {
+							console.error(
+								"[Password Reset] Unhandled email promise rejection",
+								error,
+							);
+						});
+					}
+				},
+			onPasswordReset:
+				/* istanbul ignore next -- @preserve Audit logging callback */
+				async ({ user }, _request) => {
+					// Optional callback after password reset is successful
+					// Log for audit purposes or trigger additional actions
+					console.log(`Password reset completed for user: ${user.email}`);
+				},
 		},
+		// Note: Email verification is handled by the emailOTP plugin below
+		// No link-based verification - all verification uses OTP codes
 		plugins: [
 			openAPI({
 				// Better Auth's OpenAPI plugin generates:
@@ -224,56 +183,114 @@ export function buildResolvedAuthConfig(
 				// We keep teams disabled for now; can be enabled later without breaking the API surface.
 				// Note: Prisma's @@map directives handle the plural table name mapping.
 				teams: { enabled: false },
-				sendInvitationEmail: async (data) => {
-					const apiKey = env.MANDRILL_API_KEY;
-					if (!apiKey) {
-						console.error(
-							"[Org Invitation] MANDRILL_API_KEY is not configured; invitation email skipped",
+				sendInvitationEmail:
+					/* istanbul ignore next -- @preserve Mandrill email sending tested via integration */
+					async (data) => {
+						const apiKey = env.MANDRILL_API_KEY;
+						if (!apiKey) {
+							console.error(
+								"[Org Invitation] MANDRILL_API_KEY is not configured; invitation email skipped",
+							);
+							return;
+						}
+
+						// Invitation acceptance happens in the partner app, not the auth app
+						const partnerAppUrl =
+							env.PARTNER_APP_URL || "https://partner.boletrics.workers.dev";
+
+						const invitationId = data.invitation?.id ?? data.id ?? "";
+
+						const inviteUrl = invitationId
+							? `${partnerAppUrl}/invitations/accept?invitationId=${encodeURIComponent(invitationId)}`
+							: `${partnerAppUrl}/invitations`;
+
+						const organizationName =
+							data.organization?.name ?? "tu organización";
+						// inviter is a member with nested user info
+						const inviterUser = data.inviter?.user;
+						const inviterName =
+							inviterUser?.name ?? inviterUser?.email ?? "Boletrics";
+						const email = data.email ?? "";
+
+						if (!email) {
+							console.error(
+								"[Org Invitation] Missing recipient email; invitation email skipped",
+							);
+							return;
+						}
+
+						const invitationPromise = sendOrganizationInvitationEmail(apiKey, {
+							email,
+							inviteUrl,
+							organizationName,
+							inviterName,
+							role: data.role,
+						});
+
+						if (
+							executionContext &&
+							typeof executionContext.waitUntil === "function"
+						) {
+							executionContext.waitUntil(invitationPromise);
+						} else {
+							// Fallback: ensure promise completes and errors are handled
+							invitationPromise.catch((error) => {
+								console.error(
+									"[Org Invitation] Unhandled email promise rejection",
+									error,
+								);
+							});
+						}
+					},
+			}),
+			emailOTP({
+				otpLength: 6,
+				expiresIn: 300, // 5 minutes
+				// Replace default email verification link with OTP
+				// This ensures signup flow stays in-app and preserves redirectTo
+				disableSignUp: false,
+				// Override the default email verification with OTP-based verification
+				// This means no email links are sent - only OTP codes
+				sendVerificationOnSignUp: true,
+				sendVerificationOTP:
+					/* istanbul ignore next -- @preserve Mandrill email sending tested via integration */
+					async ({ email, otp, type }) => {
+						const apiKey = env.MANDRILL_API_KEY;
+						if (!apiKey) {
+							console.error(
+								"[Email OTP] MANDRILL_API_KEY is not configured; OTP email skipped",
+							);
+							return;
+						}
+
+						const trimmedEmail = email.trim();
+						const userName = trimmedEmail.includes("@")
+							? trimmedEmail.split("@")[0]
+							: trimmedEmail || email;
+
+						// Use waitUntil for Cloudflare Workers to ensure async operation completes
+						const emailPromise = sendOtpEmail(
+							apiKey,
+							email,
+							userName,
+							otp,
+							type,
 						);
-						return;
-					}
 
-					// Invitation acceptance happens in the partner app, not the auth app
-					const partnerAppUrl =
-						env.PARTNER_APP_URL || "https://partner.boletrics.workers.dev";
-
-					const invitationId = data.invitation?.id ?? data.id ?? "";
-
-					const inviteUrl = invitationId
-						? `${partnerAppUrl}/invitations/accept?invitationId=${encodeURIComponent(invitationId)}`
-						: `${partnerAppUrl}/invitations`;
-
-					const organizationName = data.organization?.name ?? "tu organización";
-					// inviter is a member with nested user info
-					const inviterUser = data.inviter?.user;
-					const inviterName =
-						inviterUser?.name ?? inviterUser?.email ?? "Boletrics";
-					const email = data.email ?? "";
-
-					if (!email) {
-						console.error(
-							"[Org Invitation] Missing recipient email; invitation email skipped",
-						);
-						return;
-					}
-
-					const invitationPromise = sendOrganizationInvitationEmail(apiKey, {
-						email,
-						inviteUrl,
-						organizationName,
-						inviterName,
-						role: data.role,
-					});
-
-					if (
-						executionContext &&
-						typeof executionContext.waitUntil === "function"
-					) {
-						executionContext.waitUntil(invitationPromise);
-					} else {
-						void invitationPromise;
-					}
-				},
+						if (
+							executionContext &&
+							typeof executionContext.waitUntil === "function"
+						) {
+							executionContext.waitUntil(emailPromise);
+						} else {
+							emailPromise.catch((error) => {
+								console.error(
+									"[Email OTP] Unhandled email promise rejection",
+									error,
+								);
+							});
+						}
+					},
 			}),
 		],
 		session: {
@@ -307,7 +324,9 @@ function buildAdvancedOptions(
 	const advanced: BetterAuthOptions["advanced"] = {
 		disableCSRFCheck: env === "local" || env === "test",
 		disableOriginCheck: env === "local" || env === "test",
-		useSecureCookies: env !== "local" && env !== "test",
+		// Local uses HTTPS via Caddy, so secure cookies should be enabled
+		// Only test environment (non-HTTPS) should disable secure cookies
+		useSecureCookies: env !== "test",
 		// Explicitly set cookie path to "/" so cookies are accessible on all paths.
 		// Without this, cookies might only be sent to paths matching the basePath (/api/auth).
 		defaultCookieAttributes: {

@@ -81,8 +81,8 @@ app.get("/docsz", (c) => {
 // Better Auth's openAPI plugin automatically serves the OpenAPI spec at /api/auth/openapi.json
 registerBetterAuthRoutes(app);
 
-// Register avatar upload endpoints (Cloudflare Images)
-// These require authentication via Better Auth session
+// Register avatar endpoints (Cloudflare Images)
+// Upload and delete require authentication; delivery URL lookup is public
 app.route("/avatars", avatarsRouter);
 
 // Register admin organization endpoints (requires admin role)

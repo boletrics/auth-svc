@@ -1,3 +1,15 @@
+# [1.7.0](https://github.com/boletrics/auth-svc/compare/v1.6.0...v1.7.0) (2025-12-27)
+
+
+### Features
+
+* Add authentication to avatar endpoints ([cf70755](https://github.com/boletrics/auth-svc/commit/cf707550af1f2d83fe5f4f27bb994cb30cf63ce3))
+* Add JWT and Email OTP auth plugins ([17ac627](https://github.com/boletrics/auth-svc/commit/17ac627da0266491985c734621087fa852d9dfbb))
+* **admin:** add admin organizations management endpoints and register router ([c2b41b0](https://github.com/boletrics/auth-svc/commit/c2b41b084389e7b4a9cc5164eb29bd35f5f69998))
+* **auth:** add email OTP functionality and improve error handling for email sending ([f1f19c1](https://github.com/boletrics/auth-svc/commit/f1f19c140dcf1027d2b4589150fd6b890847fd79))
+* **auth:** enhance local development configuration for cookie handling ([a59c2d4](https://github.com/boletrics/auth-svc/commit/a59c2d4752a580f493c679d7ce55f3613e030a1c))
+* **avatars:** implement Cloudflare Images integration for avatar uploads and management ([4f7162e](https://github.com/boletrics/auth-svc/commit/4f7162e8418f6f0dea716e87afc30132c18fdb8c))
+
 # [1.6.0](https://github.com/boletrics/auth-svc/compare/v1.5.0...v1.6.0) (2025-12-26)
 
 

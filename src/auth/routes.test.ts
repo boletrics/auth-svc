@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { isBetterAuthRedirectError, isJwksDecryptError } from "./routes";
+import {
+	isBetterAuthRedirectError,
+	isJwksDecryptError,
+	INTERNAL_AUTH_HEADER,
+} from "./routes";
+
+describe("INTERNAL_AUTH_HEADER constant", () => {
+	it("has the correct value", () => {
+		expect(INTERNAL_AUTH_HEADER).toBe("x-auth-internal-token");
+	});
+});
 
 describe("isBetterAuthRedirectError", () => {
 	it("returns false for null/undefined", () => {

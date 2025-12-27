@@ -293,4 +293,161 @@ describe("Better Auth route access control", () => {
 			);
 		});
 	});
+
+	describe("Public routes that bypass internal token check", () => {
+		it("allows access to /api/auth/verify-email without internal token", async () => {
+			// Note: Better Auth throws an unhandled APIError for invalid tokens,
+			// so we just verify the route is not blocked by internal token check
+			const request = new Request(
+				"http://localhost/api/auth/verify-email?token=invalid-test-token",
+				{
+					method: "GET",
+				},
+			);
+			const response = await typedWorker.fetch(
+				request,
+				{
+					...env,
+					ENVIRONMENT: "dev",
+					BETTER_AUTH_SECRET: TEST_SECRET,
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
+					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
+				},
+				{} as ExecutionContext,
+			);
+
+			// Should not be blocked by the internal token check (403)
+			// Better Auth may return 401 or other status for invalid token
+			expect(response.status).not.toBe(403);
+		});
+
+		it("allows access to /api/auth/reset-password without internal token", async () => {
+			const request = new Request(
+				"http://localhost/api/auth/reset-password?token=test",
+			);
+			const response = await typedWorker.fetch(
+				request,
+				{
+					...env,
+					ENVIRONMENT: "dev",
+					BETTER_AUTH_SECRET: TEST_SECRET,
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
+					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
+				},
+				{} as ExecutionContext,
+			);
+
+			// Should not be blocked by the internal token check
+			expect(response.status).not.toBe(403);
+		});
+
+		it("allows access to /api/auth/reference without internal token", async () => {
+			const request = new Request("http://localhost/api/auth/reference");
+			const response = await typedWorker.fetch(
+				request,
+				{
+					...env,
+					ENVIRONMENT: "dev",
+					BETTER_AUTH_SECRET: TEST_SECRET,
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
+					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
+				},
+				{} as ExecutionContext,
+			);
+
+			// Should not be blocked by the internal token check
+			expect(response.status).not.toBe(403);
+		});
+
+		it("allows access to /api/auth/open-api/generate-schema without internal token", async () => {
+			const request = new Request(
+				"http://localhost/api/auth/open-api/generate-schema",
+			);
+			const response = await typedWorker.fetch(
+				request,
+				{
+					...env,
+					ENVIRONMENT: "dev",
+					BETTER_AUTH_SECRET: TEST_SECRET,
+					BETTER_AUTH_URL: "https://auth-svc.boletrics.workers.dev",
+					AUTH_INTERNAL_TOKEN: TEST_INTERNAL_TOKEN,
+				},
+				{} as ExecutionContext,
+			);
+
+			// Should not be blocked by the internal token check
+			expect(response.status).not.toBe(403);
+		});
+	});
+
+	describe("Turnstile validation for forgot-password", () => {
+		it("skips Turnstile validation when TURNSTILE_SECRET_KEY is not configured", async () => {
+			const request = new Request("http://localhost/api/auth/forgot-password", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ email: "test@example.com" }),
+			});
+
+			const response = await typedWorker.fetch(
+				request,
+				{
+					...env,
+					ENVIRONMENT: "test",
+					BETTER_AUTH_SECRET: TEST_SECRET,
+					// No TURNSTILE_SECRET_KEY
+				},
+				{} as ExecutionContext,
+			);
+
+			// Should not fail due to Turnstile (Turnstile is skipped when not configured)
+			// Response may be 200 or other status depending on Better Auth processing
+			expect(response.status).not.toBe(400); // Not a Turnstile validation error
+		});
+
+		it("rejects forgot-password when Turnstile is configured but token is missing", async () => {
+			const request = new Request("http://localhost/api/auth/forgot-password", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ email: "test@example.com" }),
+			});
+
+			const response = await typedWorker.fetch(
+				request,
+				{
+					...env,
+					ENVIRONMENT: "test",
+					BETTER_AUTH_SECRET: TEST_SECRET,
+					TURNSTILE_SECRET_KEY: "test-turnstile-secret",
+				},
+				{} as ExecutionContext,
+			);
+
+			expect(response.status).toBe(400);
+			const body = await response.json();
+			expect(body).toHaveProperty("message", "Turnstile token is required");
+		});
+
+		it("rejects forgot-password with invalid JSON body when Turnstile is configured", async () => {
+			const request = new Request("http://localhost/api/auth/forgot-password", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: "not-json",
+			});
+
+			const response = await typedWorker.fetch(
+				request,
+				{
+					...env,
+					ENVIRONMENT: "test",
+					BETTER_AUTH_SECRET: TEST_SECRET,
+					TURNSTILE_SECRET_KEY: "test-turnstile-secret",
+				},
+				{} as ExecutionContext,
+			);
+
+			expect(response.status).toBe(400);
+			const body = await response.json();
+			expect(body).toHaveProperty("message", "Invalid request body");
+		});
+	});
 });

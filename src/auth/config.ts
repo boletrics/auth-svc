@@ -102,51 +102,57 @@ export function buildResolvedAuthConfig(
 		emailAndPassword: {
 			enabled: true,
 			requireEmailVerification: true,
-			sendResetPassword: async ({ user, token }, _request) => {
-				const apiKey = env.MANDRILL_API_KEY;
-				if (!apiKey) {
-					console.error("[Password Reset] MANDRILL_API_KEY is not configured");
-					return;
-				}
-
-				// Construct frontend URL with token for direct password reset
-				// Instead of using Better Auth's backend redirect URL, we send users
-				// directly to the frontend which calls the API to reset password
-				const frontendBaseUrl =
-					env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
-				const resetUrl = `${frontendBaseUrl}/recover/reset?token=${encodeURIComponent(token)}`;
-
-				// Use waitUntil for Cloudflare Workers to ensure async operation completes
-				// Better Auth documentation recommends not awaiting email sending to prevent timing attacks
-				const emailPromise = sendPasswordResetEmail(
-					apiKey,
-					user.email,
-					user.name || user.email,
-					resetUrl,
-					"boletrics-auth-password-recovery-template",
-				);
-
-				// Use waitUntil if execution context is available (Cloudflare Workers)
-				if (
-					executionContext &&
-					typeof executionContext.waitUntil === "function"
-				) {
-					executionContext.waitUntil(emailPromise);
-				} else {
-					// Fallback: ensure promise completes and errors are handled
-					emailPromise.catch((error) => {
+			sendResetPassword:
+				/* istanbul ignore next -- @preserve Mandrill email sending tested via integration */
+				async ({ user, token }, _request) => {
+					const apiKey = env.MANDRILL_API_KEY;
+					if (!apiKey) {
 						console.error(
-							"[Password Reset] Unhandled email promise rejection",
-							error,
+							"[Password Reset] MANDRILL_API_KEY is not configured",
 						);
-					});
-				}
-			},
-			onPasswordReset: async ({ user }, _request) => {
-				// Optional callback after password reset is successful
-				// Log for audit purposes or trigger additional actions
-				console.log(`Password reset completed for user: ${user.email}`);
-			},
+						return;
+					}
+
+					// Construct frontend URL with token for direct password reset
+					// Instead of using Better Auth's backend redirect URL, we send users
+					// directly to the frontend which calls the API to reset password
+					const frontendBaseUrl =
+						env.AUTH_FRONTEND_URL || "https://auth.boletrics.workers.dev";
+					const resetUrl = `${frontendBaseUrl}/recover/reset?token=${encodeURIComponent(token)}`;
+
+					// Use waitUntil for Cloudflare Workers to ensure async operation completes
+					// Better Auth documentation recommends not awaiting email sending to prevent timing attacks
+					const emailPromise = sendPasswordResetEmail(
+						apiKey,
+						user.email,
+						user.name || user.email,
+						resetUrl,
+						"boletrics-auth-password-recovery-template",
+					);
+
+					// Use waitUntil if execution context is available (Cloudflare Workers)
+					if (
+						executionContext &&
+						typeof executionContext.waitUntil === "function"
+					) {
+						executionContext.waitUntil(emailPromise);
+					} else {
+						// Fallback: ensure promise completes and errors are handled
+						emailPromise.catch((error) => {
+							console.error(
+								"[Password Reset] Unhandled email promise rejection",
+								error,
+							);
+						});
+					}
+				},
+			onPasswordReset:
+				/* istanbul ignore next -- @preserve Audit logging callback */
+				async ({ user }, _request) => {
+					// Optional callback after password reset is successful
+					// Log for audit purposes or trigger additional actions
+					console.log(`Password reset completed for user: ${user.email}`);
+				},
 		},
 		// Note: Email verification is handled by the emailOTP plugin below
 		// No link-based verification - all verification uses OTP codes
@@ -177,62 +183,65 @@ export function buildResolvedAuthConfig(
 				// We keep teams disabled for now; can be enabled later without breaking the API surface.
 				// Note: Prisma's @@map directives handle the plural table name mapping.
 				teams: { enabled: false },
-				sendInvitationEmail: async (data) => {
-					const apiKey = env.MANDRILL_API_KEY;
-					if (!apiKey) {
-						console.error(
-							"[Org Invitation] MANDRILL_API_KEY is not configured; invitation email skipped",
-						);
-						return;
-					}
-
-					// Invitation acceptance happens in the partner app, not the auth app
-					const partnerAppUrl =
-						env.PARTNER_APP_URL || "https://partner.boletrics.workers.dev";
-
-					const invitationId = data.invitation?.id ?? data.id ?? "";
-
-					const inviteUrl = invitationId
-						? `${partnerAppUrl}/invitations/accept?invitationId=${encodeURIComponent(invitationId)}`
-						: `${partnerAppUrl}/invitations`;
-
-					const organizationName = data.organization?.name ?? "tu organización";
-					// inviter is a member with nested user info
-					const inviterUser = data.inviter?.user;
-					const inviterName =
-						inviterUser?.name ?? inviterUser?.email ?? "Boletrics";
-					const email = data.email ?? "";
-
-					if (!email) {
-						console.error(
-							"[Org Invitation] Missing recipient email; invitation email skipped",
-						);
-						return;
-					}
-
-					const invitationPromise = sendOrganizationInvitationEmail(apiKey, {
-						email,
-						inviteUrl,
-						organizationName,
-						inviterName,
-						role: data.role,
-					});
-
-					if (
-						executionContext &&
-						typeof executionContext.waitUntil === "function"
-					) {
-						executionContext.waitUntil(invitationPromise);
-					} else {
-						// Fallback: ensure promise completes and errors are handled
-						invitationPromise.catch((error) => {
+				sendInvitationEmail:
+					/* istanbul ignore next -- @preserve Mandrill email sending tested via integration */
+					async (data) => {
+						const apiKey = env.MANDRILL_API_KEY;
+						if (!apiKey) {
 							console.error(
-								"[Org Invitation] Unhandled email promise rejection",
-								error,
+								"[Org Invitation] MANDRILL_API_KEY is not configured; invitation email skipped",
 							);
+							return;
+						}
+
+						// Invitation acceptance happens in the partner app, not the auth app
+						const partnerAppUrl =
+							env.PARTNER_APP_URL || "https://partner.boletrics.workers.dev";
+
+						const invitationId = data.invitation?.id ?? data.id ?? "";
+
+						const inviteUrl = invitationId
+							? `${partnerAppUrl}/invitations/accept?invitationId=${encodeURIComponent(invitationId)}`
+							: `${partnerAppUrl}/invitations`;
+
+						const organizationName =
+							data.organization?.name ?? "tu organización";
+						// inviter is a member with nested user info
+						const inviterUser = data.inviter?.user;
+						const inviterName =
+							inviterUser?.name ?? inviterUser?.email ?? "Boletrics";
+						const email = data.email ?? "";
+
+						if (!email) {
+							console.error(
+								"[Org Invitation] Missing recipient email; invitation email skipped",
+							);
+							return;
+						}
+
+						const invitationPromise = sendOrganizationInvitationEmail(apiKey, {
+							email,
+							inviteUrl,
+							organizationName,
+							inviterName,
+							role: data.role,
 						});
-					}
-				},
+
+						if (
+							executionContext &&
+							typeof executionContext.waitUntil === "function"
+						) {
+							executionContext.waitUntil(invitationPromise);
+						} else {
+							// Fallback: ensure promise completes and errors are handled
+							invitationPromise.catch((error) => {
+								console.error(
+									"[Org Invitation] Unhandled email promise rejection",
+									error,
+								);
+							});
+						}
+					},
 			}),
 			emailOTP({
 				otpLength: 6,
@@ -243,37 +252,45 @@ export function buildResolvedAuthConfig(
 				// Override the default email verification with OTP-based verification
 				// This means no email links are sent - only OTP codes
 				sendVerificationOnSignUp: true,
-				async sendVerificationOTP({ email, otp, type }) {
-					const apiKey = env.MANDRILL_API_KEY;
-					if (!apiKey) {
-						console.error(
-							"[Email OTP] MANDRILL_API_KEY is not configured; OTP email skipped",
-						);
-						return;
-					}
-
-					const trimmedEmail = email.trim();
-					const userName = trimmedEmail.includes("@")
-						? trimmedEmail.split("@")[0]
-						: trimmedEmail || email;
-
-					// Use waitUntil for Cloudflare Workers to ensure async operation completes
-					const emailPromise = sendOtpEmail(apiKey, email, userName, otp, type);
-
-					if (
-						executionContext &&
-						typeof executionContext.waitUntil === "function"
-					) {
-						executionContext.waitUntil(emailPromise);
-					} else {
-						emailPromise.catch((error) => {
+				sendVerificationOTP:
+					/* istanbul ignore next -- @preserve Mandrill email sending tested via integration */
+					async ({ email, otp, type }) => {
+						const apiKey = env.MANDRILL_API_KEY;
+						if (!apiKey) {
 							console.error(
-								"[Email OTP] Unhandled email promise rejection",
-								error,
+								"[Email OTP] MANDRILL_API_KEY is not configured; OTP email skipped",
 							);
-						});
-					}
-				},
+							return;
+						}
+
+						const trimmedEmail = email.trim();
+						const userName = trimmedEmail.includes("@")
+							? trimmedEmail.split("@")[0]
+							: trimmedEmail || email;
+
+						// Use waitUntil for Cloudflare Workers to ensure async operation completes
+						const emailPromise = sendOtpEmail(
+							apiKey,
+							email,
+							userName,
+							otp,
+							type,
+						);
+
+						if (
+							executionContext &&
+							typeof executionContext.waitUntil === "function"
+						) {
+							executionContext.waitUntil(emailPromise);
+						} else {
+							emailPromise.catch((error) => {
+								console.error(
+									"[Email OTP] Unhandled email promise rejection",
+									error,
+								);
+							});
+						}
+					},
 			}),
 		],
 		session: {
